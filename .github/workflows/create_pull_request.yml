@@ -17,7 +17,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11' # You can change this to your preferred version
+          python-version: '3.14' # You can change this to your preferred version
           cache: 'pip'
 
       - name: Install Dependencies
@@ -33,7 +33,6 @@ jobs:
           mkdir logs
           coverage run -m pytest
   
-
   create_pull_request:
       runs-on: ubuntu-latest
       needs: test  # This creates the dependency link
