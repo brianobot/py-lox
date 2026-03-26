@@ -90,12 +90,16 @@ class Scanner:
                     TokenType.GREATER_EQUAL if self.is_match("=") else TokenType.GREATER
                 )
             case "#":
-                while self.peek() != "\n":
+                while self.peek() != "\n" and not self.is_at_end():
                     self.advance()
-            case "\\":
-                if self.is_match("*"):
-                    while self.peek() != "*" and self.is_match("\\"):
-                        self.advance()
+            # TODO: implement the correct version for the c-style comment
+            case "\\" if self.is_match("*"):
+                while (
+                    self.peek() != "*" and self.peek_next() != "\\"
+                ) and not self.is_at_end():
+                    if self.peek() == "\n":
+                        self.line += 1
+                    self.advance()
             case '"':
                 self.string()
             # ignore whitespace
