@@ -12,7 +12,7 @@ class Lox:
             exit(64)
 
         elif len(sys.argv) == 2:
-            self.run_file(sys.argv[0])
+            self.run_file(sys.argv[1])
 
         else:
             self.run_prompt()

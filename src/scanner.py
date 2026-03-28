@@ -28,7 +28,7 @@ class Scanner:
     def __init__(self, source: str):
         self.source = source
         self.tokens: list[Token] = []
-        self.line = 0
+        self.line = 1
         self.start = 0
         # start at a position behind zero since zero indexes the first time
         self.current = -1
@@ -91,7 +91,8 @@ class Scanner:
                 )
             case "#":
                 while self.peek() != "\n" and not self.is_at_end():
-                    self.advance()
+                    c = self.advance()
+                    print("⚠️ Skipping ", c)
             # TODO: implement the correct version for the c-style comment
             case "\\" if self.is_match("*"):
                 while (
@@ -103,10 +104,10 @@ class Scanner:
             case '"':
                 self.string()
             # ignore whitespace
-            case " " | "\r" | "\t":
-                pass
             case "\n":
                 self.line += 1
+            case " " | "\r" | "\t":
+                pass
             case _:
                 if c.isdigit():
                     self.number()
@@ -151,6 +152,8 @@ class Scanner:
     def string(self):
         from .main import Lox
 
+        # this keeps track of where the string started in
+        # order to slice the source code correctly to get the string literal
         self.start = self.current
         self.advance()  # this ensures that we start the check on the next character after the first quote
 
@@ -167,21 +170,29 @@ class Scanner:
             return
 
         value = self.source[self.start + 1 : self.current]
+        # This eliminates newlines characters found within a string
+        # this support multiline strings effortlessly
+        value = "".join(value.split("\n"))
         self.add_token(TokenType.STRING, value)
 
     # 2"Hello"
     # 12345
     # TODO: Correct the implementation for Number to catch numbers sitting directly beside strings
     def number(self):
+        # this keeps track of where the string started in
+        # order to slice the source code correctly to get the string literal
         self.start = self.current
 
         while self.peek().isdigit() and not self.is_at_end():
-            self.advance()
+            if self.peek_next().isdigit() or self.peek_next() == ".":
+                self.advance()
+            else:
+                break
 
         if self.peek() == "." and self.peek_next().isdigit():
             self.advance()
 
-            while (self.peek().isdigit()) and not self.is_at_end():
+            while self.peek_next().isdigit() and not self.is_at_end():
                 self.advance()
 
         value = self.source[self.start : self.current + 1]
@@ -259,48 +270,50 @@ class TestScanner:
 
         assert scanner.peek_next() == "\0"
 
-    def test_string(self):
-        scanner = Scanner('"hello"')
+    @pytest.mark.parametrize(
+        "string_value,literal_string",
+        [
+            ('"hello"', "hello"),
+            ('"hello"bb', "hello"),
+            ('"123245"bb', "123245"),
+            ('"hello world"', "hello world"),
+            ('"hello  world"', "hello  world"),
+            ('"hello\n\n world"bb', "hello world"),
+            ('"hello\n\n  world"bb', "hello  world"),
+        ],
+    )
+    def test_string(self, string_value: str, literal_string: str):
+        scanner = Scanner(string_value)
         value = scanner.advance()
+
         assert value == '"'
+
         scanner.string()
         assert len(scanner.tokens) == 1
-        assert scanner.tokens[0].literal == "hello"
+        assert scanner.tokens[0].literal == literal_string
 
-        scanner = Scanner('"hello"b')
+    @pytest.mark.parametrize(
+        "number_value,literal_number",
+        [
+            ("25;", 25),
+            ("123", 123),
+            ("123.", 123),
+            ("12.34", 12.34),
+            ("12.34.", 12.34),
+            ("12.34b", 12.34),
+            ("12.34+", 12.34),
+            ('12.34"Brian"', 12.34),
+        ],
+    )
+    def test_number(self, number_value: str, literal_number: float):
+        scanner = Scanner(number_value)
         value = scanner.advance()
-        assert value == '"'
-        scanner.string()
-        assert len(scanner.tokens) == 1
-        assert scanner.tokens[0].literal == "hello"
 
-    def test_number(self):
-        scanner = Scanner("12345")
-        value = scanner.advance()
-
-        assert value == "1"
+        assert value == str(literal_number)[0]
         scanner.number()
 
         assert len(scanner.tokens) == 1
-        assert scanner.tokens[0].literal == 12345
-
-        scanner = Scanner("123.456")
-        value = scanner.advance()
-
-        assert value == "1"
-        scanner.number()
-
-        assert len(scanner.tokens) == 1
-        assert scanner.tokens[0].literal == 123.456
-
-        # scanner = Scanner('123"Hello"')
-        # value = scanner.advance()
-
-        # assert value == "1"
-        # scanner.number()
-
-        # assert len(scanner.tokens) == 1
-        # assert scanner.tokens[0].literal == 123
+        assert scanner.tokens[0].literal == literal_number
 
     @pytest.mark.parametrize(
         "keyword,token_type",
@@ -310,6 +323,7 @@ class TestScanner:
             ("class", TokenType.CLASS),
             ("var", TokenType.VAR),
             ("if", TokenType.IF),
+            ("\nprint", TokenType.PRINT),
         ],
     )
     def test_identifier(self, keyword: str, token_type: TokenType):
@@ -321,6 +335,20 @@ class TestScanner:
         assert len(scanner.tokens) == 1
 
         assert scanner.tokens[0].type == token_type
+
+    @pytest.mark.parametrize(
+        "comment,expected_count",
+        [
+            ("#this is a comment", ""),
+            ("#this is a comment\n", ""),
+            ("\\* This is an inline comment *\\", ""),
+        ],
+    )
+    def test_comments(self, comment: str, expected_count: int):
+        scanner = Scanner(comment)
+        scanner.scan_token()
+
+        assert scanner.current == len(scanner.source) - 1
 
 
 if __name__ == "__main__":
