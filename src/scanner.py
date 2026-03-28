@@ -169,10 +169,13 @@ class Scanner:
         value = self.source[self.start + 1 : self.current]
         self.add_token(TokenType.STRING, value)
 
+    # 2"Hello"
+    # 12345
+    # TODO: Correct the implementation for Number to catch numbers sitting directly beside strings
     def number(self):
         self.start = self.current
 
-        while (self.peek().isdigit()) and not self.is_at_end():
+        while self.peek().isdigit() and not self.is_at_end():
             self.advance()
 
         if self.peek() == "." and self.peek_next().isdigit():
@@ -290,6 +293,15 @@ class TestScanner:
         assert len(scanner.tokens) == 1
         assert scanner.tokens[0].literal == 123.456
 
+        # scanner = Scanner('123"Hello"')
+        # value = scanner.advance()
+
+        # assert value == "1"
+        # scanner.number()
+
+        # assert len(scanner.tokens) == 1
+        # assert scanner.tokens[0].literal == 123
+
     @pytest.mark.parametrize(
         "keyword,token_type",
         [
@@ -312,6 +324,6 @@ class TestScanner:
 
 
 if __name__ == "__main__":
-    scanner = Scanner('"brian""brian"')
+    scanner = Scanner('"brian"\n"brian"')
     tokens = scanner.scan_tokens()
     print(*tokens, sep="\n")
