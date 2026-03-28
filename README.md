@@ -10,6 +10,39 @@ Compilation Steps
   this value store is also applied to tokens that represent strings, along side storing the literal values for some tokens, the line
   where the token appear in the source code is stored on the token object, this helps with things like error reporting later in the compilation/interpretation phases.
 
+  Example:
+  ```
+  # Source Code
+  var name = "Brian Obot";
+  print name;
+
+  var age = 25;
+  print age
+  ```
+
+  give this sample source code, which by the way is a valid syntax for the py-lox being built in the course of this course,
+  when this code is passed to the lexxer, it reads the characters and produces a stream of token that matches the ones shown below
+
+  ```
+Token(type=<TokenType.VAR: 37>, lexeme='var', literal=None, line=1)
+Token(type=<TokenType.IDENTIFIER: 20>, lexeme='var name', literal=None, line=1)
+Token(type=<TokenType.EQUAL: 14>, lexeme='var name ', literal=None, line=1)
+Token(type=<TokenType.STRING: 21>, lexeme='"Brian Obot is the developing', literal='Brian Obot is the developing', line=1)
+Token(type=<TokenType.SEMICOLON: 9>, lexeme='"Brian Obot is the developing"', literal=None, line=1)
+Token(type=<TokenType.IDENTIFIER: 20>, lexeme='"Brian Obot is the developing";\nprint', literal=None, line=2)
+Token(type=<TokenType.IDENTIFIER: 20>, lexeme='"Brian Obot is the developing";\nprint name', literal=None, line=2)
+Token(type=<TokenType.IDENTIFIER: 20>, lexeme='"Brian Obot is the developing";\nprint name;\n\nvar', literal=None, line=4)
+Token(type=<TokenType.IDENTIFIER: 20>, lexeme='"Brian Obot is the developing";\nprint name;\n\nvar age', literal=None, line=4)
+Token(type=<TokenType.EQUAL: 14>, lexeme='"Brian Obot is the developing";\nprint name;\n\nvar age ', literal=None, line=4)
+Token(type=<TokenType.NUMBER: 22>, lexeme='2', literal=25.0, line=4)
+Token(type=<TokenType.SEMICOLON: 9>, lexeme='25', literal=None, line=4)
+Token(type=<TokenType.IDENTIFIER: 20>, lexeme='25;\nprint', literal=None, line=5)
+Token(type=<TokenType.IDENTIFIER: 20>, lexeme='25;\nprint age', literal=None, line=5)
+Token(type=<TokenType.EOF: 39>, lexeme='', literal=None, line=5)
+  ```
+
+  for the acute reader, you might notice an error with parsing print function, I have just temporarily given up and fixing that to maintain learning progress at all cost, i would definitely resolve that soon, also the lexeme for the tokens are not correct
+
 - *Parsing*
 
 - *Static Analysis*

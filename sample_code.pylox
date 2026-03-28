@@ -1,0 +1,5 @@
+var name = "Brian Obot is the developing";
+print name;
+
+var age = 25;
+print age;
