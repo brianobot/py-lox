@@ -1,8 +1,8 @@
-from .parser import Binary, Expression, Grouping, Literal, Unary, Visitor
+from .base_parser import Binary, Expression, Grouping, Literal, Unary, Visitor
 from .token import Token, TokenType
 
 
-class ASTPrinter(Visitor):
+class ASTPrinterVisitor(Visitor):
     def print(self, expression: Expression):
         return expression.accept(self)
 
@@ -37,6 +37,6 @@ if __name__ == "__main__":
         Grouping(Literal(23.45)),
     )
 
-    ast_printer = ASTPrinter()
+    ast_printer = ASTPrinterVisitor()
     value = ast_printer.print(expression)
     print("Value", value)
