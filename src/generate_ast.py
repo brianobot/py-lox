@@ -61,10 +61,10 @@ def main():
         output_dir,
         "Expression",
         {
-            "Binary": "left: Expression, operator: Token, right: Expression",
-            "Grouping": "expression: Expression",
             "Literal": "value: Any",
+            "Grouping": "expression: Expression",
             "Unary": "operator: Token, right: Expression",
+            "Binary": "left: Expression, operator: Token, right: Expression",
         },
     )
 

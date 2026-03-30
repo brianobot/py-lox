@@ -72,6 +72,42 @@ grammar, each string is a sequence of alphabets in that grammar.
 In the lexxing phase, the alphabets are the individual characters and the strings are the valid lexeme
 while in the parsing phase, the alphabets are the indivudal tokens and the strings are the sequence of tokens; expression
 
+### Rules of Grammar:
+Since it's not possible to write down a grammar that contains an infinite set of elements,
+
+- Given a rule for a grammar, if we generate strings for that grammar based on that rule, we call that derivations
+- The opposite process is called Parsing, moving from the String to get the Grammar rules that generated the String
+
+Rules are called Production because they produce string in the grammar.
+
+Each Production in a Context-Free Grammar has a
+- `head`: Name of the rule/production
+- `body`: Describes what it generates (list of symbols)
+  - `terminal`: a letter from the grammar alphabet, they are called terminal because they don't lead to another symbol
+  - `non-terminal`: named reference to another rule, which basically plays that rule and insert the resulting terminal where the non terminal was found
+
+  it's possible to have multiple productions with the same name, when working with them from the non-terminal any of them that works can be selected for the non-terminal
+
+  In Order to build a parser, it's important to define rules for your grammar
+  ```pylox language productions
+  expression -> literal | unary | binary | grouping;
+  literal    -> NUMBER | STRING | "true" | "false" | "nil";
+  grouping   -> "(" expresssion ")" ;
+  unary      -> ( "-" | "!" ) expression;
+  binary     -> expression operator expression;
+  operator   -> "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/";
+  ```
+
+  in addition to quoted strings for terminal, we use CAPITALIZE words to present single Tokens whose value may vary
+
+  Some example of strings (exoressions) generated from the rule above
+
+  ```
+  12 (expression -> literal)
+  -12 -> (expression -> unary -> - expression)
+  ```
+
+  In Parse tree, every single grammar production becomes a node in the Generated Abstract Syntax Tree
 
 
 

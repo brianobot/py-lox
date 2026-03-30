@@ -7,7 +7,7 @@ from .token import Token
 
 class Visitor(ABC):
     @abstractmethod
-    def visit_binary(self, binary: "Binary") -> Any:
+    def visit_literal(self, literal: "Literal") -> Any:
         pass
 
     @abstractmethod
@@ -15,11 +15,11 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
-    def visit_literal(self, literal: "Literal") -> Any:
+    def visit_unary(self, unary: "Unary") -> Any:
         pass
 
     @abstractmethod
-    def visit_unary(self, unary: "Unary") -> Any:
+    def visit_binary(self, binary: "Binary") -> Any:
         pass
 
 
@@ -27,24 +27,6 @@ class Expression(ABC):
     @abstractmethod
     def accept(self, visitor: "Visitor"):
         pass
-
-
-@dataclass
-class Binary(Expression):
-    left: Expression
-    operator: Token
-    right: Expression
-
-    def accept(self, visitor: Visitor):
-        return visitor.visit_binary(self)
-
-
-@dataclass
-class Grouping(Expression):
-    expression: Expression
-
-    def accept(self, visitor: Visitor):
-        return visitor.visit_grouping(self)
 
 
 @dataclass
@@ -56,9 +38,27 @@ class Literal(Expression):
 
 
 @dataclass
+class Grouping(Expression):
+    expression: Expression
+
+    def accept(self, visitor: Visitor):
+        return visitor.visit_grouping(self)
+
+
+@dataclass
 class Unary(Expression):
     operator: Token
     right: Expression
 
     def accept(self, visitor: Visitor):
         return visitor.visit_unary(self)
+
+
+@dataclass
+class Binary(Expression):
+    left: Expression
+    operator: Token
+    right: Expression
+
+    def accept(self, visitor: Visitor):
+        return visitor.visit_binary(self)
