@@ -25,7 +25,7 @@ class Visitor(ABC):
 
 class Expression(ABC):
     @abstractmethod
-    def accept(self, visitor: "Visitor"):
+    def accept(self, visitor: "Visitor") -> Any:
         pass
 
 

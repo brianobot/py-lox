@@ -109,6 +109,31 @@ Each Production in a Context-Free Grammar has a
 
   In Parse tree, every single grammar production becomes a node in the Generated Abstract Syntax Tree
 
+  Pretty Printing usually refers to the process of converting a Tree into a string
+
+  Remember that Parsing the process of moving from a string to the production/rules that generated that string, it is entirely possible to ambigious situation where a string can be mapped back to multiple rules, in order to stop or prevent this, when multiple operators are present in a string, a well defined precedence and associativity rule is followed to create a deterministic flow for that case.
+
+  To fix this issue related to precedence, we define the grammar again but including seperate rules for each precedence level
+
+  ```Updated Grammar Rule (from lowest precedence level to highest)
+  expression    -> equality
+  equality      -> comparison( ("!=" | "==") comparison)*;
+  comparison    -> term ( (">" | ">=" | "<" | "<=") term)*;
+  term          -> factor ( ("+" | "-") factor)*;
+  factor        -> unary ( ("/" | "*") unary )*;
+  unary         -> ("!" | "-") unary | primary;
+  primary       -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")";
+  ```
+
+  this structure basically enforces that the higher precendence rules are evaluated first before the lower ones
+
+  Recursive Decent parser is a literal transformation of grammar rules into imperative code
+
+  The parser has 2 main jobs,
+  - Given a valid sequence of tokens, produce a corresponding syntax tree
+  - Given an invalid sequence of tokens, detect and report the error
+
+  Error Recovery refers to the way a compiler responds to an error and keep looking for further errors
 
 
 - **Static Analysis**

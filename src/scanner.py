@@ -40,54 +40,57 @@ class Scanner:
         self.tokens.append(Token(TokenType.EOF, "", None, self.line))
         return self.tokens
 
-    def add_token(self, token_type: TokenType, literal: Any = None):
-        text = self.source[self.start : self.current]
+    def add_token(self, token_type: TokenType, text: str = "", literal: Any = None):
         token = Token(token_type, text, literal, self.line)
         self.tokens.append(token)
 
     def scan_token(self):
-        from .main import Lox
-
         c = self.advance()
 
         match c:
             case "(":
-                self.add_token(TokenType.LEFT_PAREN)
+                self.add_token(TokenType.LEFT_PAREN, c)
             case ")":
-                self.add_token(TokenType.RIGHT_PAREN)
+                self.add_token(TokenType.RIGHT_PAREN, c)
             case "{":
-                self.add_token(TokenType.LEFT_BRACE)
+                self.add_token(TokenType.LEFT_BRACE, c)
             case "}":
-                self.add_token(TokenType.RIGHT_BRACE)
+                self.add_token(TokenType.RIGHT_BRACE, c)
             case ",":
-                self.add_token(TokenType.COMMA)
+                self.add_token(TokenType.COMMA, c)
             case ".":
-                self.add_token(TokenType.DOT)
+                self.add_token(TokenType.DOT, c)
             case "-":
-                self.add_token(TokenType.MINUS)
+                self.add_token(TokenType.MINUS, c)
             case "+":
-                self.add_token(TokenType.PLUS)
+                self.add_token(TokenType.PLUS, c)
             case ";":
-                self.add_token(TokenType.SEMICOLON)
+                self.add_token(TokenType.SEMICOLON, c)
             case "*":
-                self.add_token(TokenType.STAR)
+                self.add_token(TokenType.STAR, c)
             case "/":
-                self.add_token(TokenType.SLASH)
+                self.add_token(TokenType.SLASH, c)
             case "!":
                 self.add_token(
-                    TokenType.BANG_EQUAL if self.is_match("=") else TokenType.BANG
+                    TokenType.BANG_EQUAL if self.is_match("=") else TokenType.BANG,
+                    f"{c}=" if self.peek() == "=" else c,
                 )
             case "=":
                 self.add_token(
-                    TokenType.EQUAL_EQUAL if self.is_match("=") else TokenType.EQUAL
+                    TokenType.EQUAL_EQUAL if self.is_match("=") else TokenType.EQUAL,
+                    f"{c}=" if self.peek() == "=" else c,
                 )
             case "<":
                 self.add_token(
-                    TokenType.LESS_EQUAL if self.is_match("") else TokenType.LESS
+                    TokenType.LESS_EQUAL if self.is_match("") else TokenType.LESS,
+                    f"{c}=" if self.peek() == "=" else c,
                 )
             case ">":
                 self.add_token(
-                    TokenType.GREATER_EQUAL if self.is_match("=") else TokenType.GREATER
+                    TokenType.GREATER_EQUAL
+                    if self.is_match("=")
+                    else TokenType.GREATER,
+                    f"{c}=" if self.peek() == "=" else c,
                 )
             case "#":
                 while self.peek() != "\n" and not self.is_at_end():
@@ -114,7 +117,9 @@ class Scanner:
                 elif c.isalpha() or c == "_":
                     self.identifier()
                 else:
-                    Lox.error(self.line, "Unexpected Character")
+                    # Lox.error(self.line, "Unexpected Character")
+                    # TODO
+                    pass
 
     def is_match(self, expected: str):
         """
@@ -173,7 +178,7 @@ class Scanner:
         # This eliminates newlines characters found within a string
         # this support multiline strings effortlessly
         value = "".join(value.split("\n"))
-        self.add_token(TokenType.STRING, value)
+        self.add_token(TokenType.STRING, value, value)
 
     # 2"Hello"
     # 12345
@@ -196,7 +201,7 @@ class Scanner:
                 self.advance()
 
         value = self.source[self.start : self.current + 1]
-        self.add_token(TokenType.NUMBER, float(value))
+        self.add_token(TokenType.NUMBER, value, float(value))
 
     def identifier(self):
         self.advance()
@@ -207,9 +212,9 @@ class Scanner:
         text = self.source[self.start : self.current + 1]
         type = KEYWORDS.get(text.strip())
         if type is None:
-            self.add_token(TokenType.IDENTIFIER)
+            self.add_token(TokenType.IDENTIFIER, text)
         else:
-            self.add_token(type)
+            self.add_token(type, text)
 
 
 class TestScanner:
