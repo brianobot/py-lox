@@ -6,11 +6,9 @@ class ASTPrinterVisitor(Visitor):
     def print(self, expression: Expression):
         return expression.accept(self)
 
-    def visit_binary(self, binary: "Binary"):
-        return self.parenthesize(binary.operator.lexeme, binary.left, binary.right)
-
     def visit_literal(self, literal: "Literal"):
         if literal.value is None:
+            print(f"Literal: {literal}")
             return "nil"
         return str(literal.value)
 
@@ -20,11 +18,14 @@ class ASTPrinterVisitor(Visitor):
     def visit_unary(self, unary: "Unary"):
         return self.parenthesize(unary.operator.lexeme, unary.right)
 
+    def visit_binary(self, binary: "Binary"):
+        return self.parenthesize(binary.operator.lexeme, binary.left, binary.right)
+
     def parenthesize(self, name: str, *expressions: Expression):
         builder = f"({name}"
         for expression in expressions:
             builder += " "
-            builder += str(expression.accept(self))
+            builder += expression.accept(self)
 
         builder += ")"
         return builder
