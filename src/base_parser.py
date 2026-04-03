@@ -22,10 +22,18 @@ class Visitor(ABC):
     def visit_binary(self, binary: "Binary") -> Any:
         pass
 
+    @abstractmethod
+    def visit_expr(self, expr: "Expr") -> Any:
+        pass
+
+    @abstractmethod
+    def visit_print(self, expr: "Print") -> Any:
+        pass
+
 
 class Expression(ABC):
     @abstractmethod
-    def accept(self, visitor: "Visitor") -> Any:
+    def accept(self, visitor: "Visitor"):
         pass
 
 
@@ -62,3 +70,25 @@ class Binary(Expression):
 
     def accept(self, visitor: Visitor):
         return visitor.visit_binary(self)
+
+
+class Statement(ABC):
+    @abstractmethod
+    def accept(self, visitor: "Visitor"):
+        pass
+
+
+@dataclass
+class Expr(Statement):
+    expression: Expression
+
+    def accept(self, visitor: Visitor):
+        return visitor.visit_expr(self)
+
+
+@dataclass
+class Print(Statement):
+    expression: Expression
+
+    def accept(self, visitor: Visitor):
+        return visitor.visit_print(self)

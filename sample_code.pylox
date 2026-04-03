@@ -1,5 +1,3 @@
-var name = "Brian Obot is the developing";
-print name;
-
-var age = 25;
-print age;
+print "one";
+print 2 + 1;
+print "Hello" + " " + "world";

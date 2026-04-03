@@ -135,6 +135,21 @@ Each Production in a Context-Free Grammar has a
 
   Error Recovery refers to the way a compiler responds to an error and keep looking for further errors
 
+  In Order to add support for statement to the language we have to update our rules and productions
+
+  ```Updated Grammar Rule (from lowest precedence level to highest)
+  program       -> statement* EOF;
+  statement     -> exprStmt | printStmt;
+  exprStmt      -> expresssion ";" ;
+  printStmt     -> "print" expression ";" ;
+  expression    -> equality
+  equality      -> comparison( ("!=" | "==") comparison)*;
+  comparison    -> term ( (">" | ">=" | "<" | "<=") term)*;
+  term          -> factor ( ("+" | "-") factor)*;
+  factor        -> unary ( ("/" | "*") unary )*;
+  unary         -> ("!" | "-") unary | primary;
+  primary       -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")";
+  ```
 
 - **Static Analysis**
 

@@ -1,17 +1,26 @@
 from typing import Any
 
-from .base_parser import Binary, Expression, Grouping, Literal, Unary, Visitor
+from .base_parser import (
+    Binary,
+    Expr,
+    Expression,
+    Grouping,
+    Literal,
+    Print,
+    Statement,
+    Unary,
+    Visitor,
+)
 from .token import Token, TokenType
 
 
 class Interpreter(Visitor):
-    def interpret(self, expression: Expression):
+    def interpret(self, statements: list[Statement]):
         from .main import Lox
 
         try:
-            value = self.evaluate(expression)
-            print(str(value))
-            return value
+            for statement in statements:
+                self.execute(statement)
         except RunTimeError as err:
             return Lox.runtime_error(err)
         except Exception as err:
@@ -41,8 +50,20 @@ class Interpreter(Visitor):
 
         raise RunTimeError(operator, "Operands must be Numbers")
 
+    def execute(self, statement: Statement):
+        return statement.accept(self)
+
     def evaluate(self, expression: Expression):
         return expression.accept(self)
+
+    def visit_expr(self, expr: Expr):
+        self.evaluate(expr.expression)
+        return None
+
+    def visit_print(self, expr: Print):
+        value = self.evaluate(expr.expression)
+        print("Output: ", value)
+        return None
 
     def visit_literal(self, literal: "Literal"):
         return literal.value
@@ -70,6 +91,11 @@ class Interpreter(Visitor):
                 return left - right
             case TokenType.SLASH:
                 self.check_number_operands(binary.operator, left, right)
+                if right == 0:
+                    raise RunTimeError(
+                        binary.operator, "Division by Zero is not allowed"
+                    )
+
                 return left / right
             case TokenType.STAR:
                 self.check_number_operands(binary.operator, left, right)
@@ -106,3 +132,27 @@ class RunTimeError(Exception):
 
     def get_message(self):
         return f"{self.operator.lexeme if self.operator else ''}: {self.message}"
+
+
+class TestInterpreter:
+    import pytest
+
+    @pytest.mark.parametrize(
+        "object,value", [(None, False), (False, False), (1, True), ("Hello", True)]
+    )
+    def test_is_truthy(self, object: Any, value: bool):
+        interpreter = Interpreter()
+        assert interpreter.is_truthy(object) is value
+
+    @pytest.mark.parametrize(
+        "left,right,case",
+        [
+            (1, 1, True),
+            ("", "", True),
+            ("1", 1, False),
+            (None, None, True),
+        ],
+    )
+    def test_is_equal(self, left: Any, right: Any, case: bool):
+        interpreter = Interpreter()
+        assert interpreter.is_equal(left, right) is case
