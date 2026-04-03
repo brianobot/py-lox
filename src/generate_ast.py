@@ -48,7 +48,36 @@ def define_ast(output_path: str, base_class: str, expression_mapping: dict[str, 
 
             # define the accept method on each type
             file.write("\tdef accept(self, visitor: Visitor):\n")
-            file.write(f"\t\treturn visitor.visit_{expression_type.lower()}(self)\n\n")
+            file.write(
+                f"\t\treturn visitor.visit_{expression_type.lower()}(self)\n\n\n"
+            )
+
+
+def append_to_ast(output_path: str, base_class: str, statement_mapping: dict[str, str]):
+    with open(output_path, "a+") as file:
+        # define the Statement base class
+        file.writelines(["\n", "\n"])
+        file.write(f"class {base_class}(ABC):\n")
+        file.write("\t@abstractmethod\n")
+        file.write('\tdef accept(self, visitor: "Visitor"):\n')
+        file.write("\t\tpass\n\n\n")
+
+        # define the Classes that inherit from base class
+        for statement_type, fields in statement_mapping.items():
+            field_list = fields.split(",")
+            print("Field list: ", field_list)
+
+            file.write("@dataclass\n")
+            field_str = ""
+            for field in field_list:
+                field_str += f"\t{field.strip()}\n"
+
+            file.write(f"class {statement_type}({base_class}):\n")
+            file.write(f"{field_str}\n")
+
+            # define the accept method on each type
+            file.write("\tdef accept(self, visitor: Visitor):\n")
+            file.write(f"\t\treturn visitor.visit_{statement_type.lower()}(self)\n\n")
 
 
 def main():
@@ -65,6 +94,15 @@ def main():
             "Grouping": "expression: Expression",
             "Unary": "operator: Token, right: Expression",
             "Binary": "left: Expression, operator: Token, right: Expression",
+        },
+    )
+
+    append_to_ast(
+        output_dir,
+        "Statement",
+        {
+            "Expr": "expression: Expression",
+            "Print": "expression: Expression",
         },
     )
 

@@ -2,7 +2,6 @@ import sys
 
 from .interpreter import Interpreter, RunTimeError
 from .parser import Parser
-from .printer import ASTPrinterVisitor
 from .scanner import Scanner
 from .token import Token, TokenType
 
@@ -50,17 +49,17 @@ class Lox:
             print(token)
 
         parser = Parser(tokens)
-        expression = parser.parse()
+        statements = parser.parse()
 
-        if not expression:
-            print("Invalid Expression: ", expression)
+        if not statements:
+            print("Invalid Expression: ", statements)
             return None
 
-        ast_printer = ASTPrinterVisitor()
-        tree = ast_printer.print(expression)
-        print("AST\n", tree)
+        # ast_printer = ASTPrinterVisitor()
+        # tree = ast_printer.print(expression)
+        # print("AST\n", tree)
 
-        value = self.interpreter.interpret(expression)
+        value = self.interpreter.interpret(statements)
         print("----------------")
         print(f"Value = {value}")
         print("----------------")

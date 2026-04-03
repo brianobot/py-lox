@@ -204,13 +204,11 @@ class Scanner:
         self.add_token(TokenType.NUMBER, value, float(value))
 
     def identifier(self):
-        self.advance()
-
-        while self.peek().isalnum() and not self.is_at_end():
+        while self.peek_next().isalnum() and not self.is_at_end():
             self.advance()
 
         text = self.source[self.start : self.current + 1]
-        type = KEYWORDS.get(text.strip())
+        type = KEYWORDS.get(text.strip())  # WHY DID I USE STRIP HERE??
         if type is None:
             self.add_token(TokenType.IDENTIFIER, text)
         else:
@@ -321,17 +319,22 @@ class TestScanner:
         assert scanner.tokens[0].literal == literal_number
 
     @pytest.mark.parametrize(
-        "keyword,token_type",
+        "keyword,token_type,token_lexeme",
         [
-            ("result", TokenType.IDENTIFIER),
-            ("print", TokenType.PRINT),
-            ("class", TokenType.CLASS),
-            ("var", TokenType.VAR),
-            ("if", TokenType.IF),
-            ("\nprint", TokenType.PRINT),
+            ("result", TokenType.IDENTIFIER, "result"),
+            ("return", TokenType.RETURN, "return"),
+            ("print", TokenType.PRINT, "print"),
+            ("class", TokenType.CLASS, "class"),
+            ("var", TokenType.VAR, "var"),
+            ("if", TokenType.IF, "if"),
+            ("print\n", TokenType.PRINT, "print"),
+            ("true", TokenType.TRUE, "true"),
+            ("true;", TokenType.TRUE, "true"),
+            ("false", TokenType.FALSE, "false"),
+            ("false;", TokenType.FALSE, "false"),
         ],
     )
-    def test_identifier(self, keyword: str, token_type: TokenType):
+    def test_identifier(self, keyword: str, token_type: TokenType, token_lexeme: str):
         scanner = Scanner(keyword)
         value = scanner.advance()
 
@@ -340,6 +343,8 @@ class TestScanner:
         assert len(scanner.tokens) == 1
 
         assert scanner.tokens[0].type == token_type
+        assert scanner.tokens[0].lexeme == token_lexeme
+        assert scanner.tokens[0].literal is None
 
     @pytest.mark.parametrize(
         "comment,expected_count",

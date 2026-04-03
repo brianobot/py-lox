@@ -1,4 +1,4 @@
-from .base_parser import Binary, Grouping, Literal, Unary
+from .base_parser import Binary, Expr, Grouping, Literal, Print, Statement, Unary
 from .token import Token, TokenType
 
 
@@ -9,10 +9,14 @@ class Parser:
         self.current = 0
 
     def parse(self):
-        try:
-            return self.expression()
-        except Exception:
-            return None
+        statements: list[Statement] = []
+        while not self.is_at_end():
+            try:
+                statements.append(self.statement())
+            except Exception as err:
+                print("⚠️ Error: ", err)
+                break
+        return statements
 
     def peek(self):
         return self.tokens[self.current]
@@ -42,6 +46,22 @@ class Parser:
                 return True
 
         return False
+
+    def statement(self) -> Statement:
+        if self.match(TokenType.PRINT):
+            return self.print_statement()
+
+        return self.expression_statement()
+
+    def expression_statement(self):
+        expression = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ; after value")
+        return Expr(expression)
+
+    def print_statement(self):
+        value = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ; after value")
+        return Print(value)
 
     def expression(self):
         return self.equality()
