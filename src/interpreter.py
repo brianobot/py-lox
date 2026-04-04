@@ -9,12 +9,17 @@ from .base_parser import (
     Print,
     Statement,
     Unary,
+    Var,
+    Variable,
     Visitor,
 )
+from .environment import Environment
 from .token import Token, TokenType
 
 
 class Interpreter(Visitor):
+    environment = Environment()
+
     def interpret(self, statements: list[Statement]):
         from .main import Lox
 
@@ -60,9 +65,20 @@ class Interpreter(Visitor):
         self.evaluate(expr.expression)
         return None
 
+    def visit_variable(self, variable: Variable):
+        return self.environment.get(variable.name)
+
     def visit_print(self, expr: Print):
         value = self.evaluate(expr.expression)
         print("Output: ", value)
+        return None
+
+    def visit_var(self, var: Var):
+        value = None
+        if var.initializer is None:
+            value = self.evaluate(var.initializer)
+
+        self.environment.define(var.name.lexeme, value)
         return None
 
     def visit_literal(self, literal: "Literal"):

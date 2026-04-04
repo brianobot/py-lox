@@ -94,6 +94,7 @@ def main():
             "Grouping": "expression: Expression",
             "Unary": "operator: Token, right: Expression",
             "Binary": "left: Expression, operator: Token, right: Expression",
+            "Variable": "name: Token",
         },
     )
 
@@ -103,6 +104,7 @@ def main():
         {
             "Expr": "expression: Expression",
             "Print": "expression: Expression",
+            "Var": "name: Token, initializer: Expression",
         },
     )
 

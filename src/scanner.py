@@ -325,6 +325,7 @@ class TestScanner:
             ("return", TokenType.RETURN, "return"),
             ("print", TokenType.PRINT, "print"),
             ("class", TokenType.CLASS, "class"),
+            ("fun", TokenType.FUN, "fun"),
             ("var", TokenType.VAR, "var"),
             ("if", TokenType.IF, "if"),
             ("print\n", TokenType.PRINT, "print"),

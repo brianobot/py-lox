@@ -27,7 +27,15 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
+    def visit_variable(self, variable: "Variable") -> Any:
+        pass
+
+    @abstractmethod
     def visit_print(self, expr: "Print") -> Any:
+        pass
+
+    @abstractmethod
+    def visit_var(self, var: "Var") -> Any:
         pass
 
 
@@ -72,6 +80,14 @@ class Binary(Expression):
         return visitor.visit_binary(self)
 
 
+@dataclass
+class Variable(Expression):
+    name: Token
+
+    def accept(self, visitor: Visitor):
+        return visitor.visit_variable(self)
+
+
 class Statement(ABC):
     @abstractmethod
     def accept(self, visitor: "Visitor"):
@@ -92,3 +108,12 @@ class Print(Statement):
 
     def accept(self, visitor: Visitor):
         return visitor.visit_print(self)
+
+
+@dataclass
+class Var(Statement):
+    name: Token
+    initializer: Expression
+
+    def accept(self, visitor: Visitor):
+        return visitor.visit_var(self)
