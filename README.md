@@ -151,6 +151,24 @@ Each Production in a Context-Free Grammar has a
   primary       -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")";
   ```
 
+  In Order to support declaration statement another grammar rule is introduced
+
+  ```Updated Grammar Rule (from lowest precedence level to highest)
+  program       -> declaration* EOF;
+  declaration   -> varDecl | statement ;
+  varDecl       -> "var" IDENTIFIER ( "=" expression)? ";" ;
+  statement     -> exprStmt | printStmt;
+  exprStmt      -> expresssion ";" ;
+  printStmt     -> "print" expression ";" ;
+  expression    -> equality
+  equality      -> comparison( ("!=" | "==") comparison)*;
+  comparison    -> term ( (">" | ">=" | "<" | "<=") term)*;
+  term          -> factor ( ("+" | "-") factor)*;
+  factor        -> unary ( ("/" | "*") unary )*;
+  unary         -> ("!" | "-") unary | primary;
+  primary       -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER;
+  ```
+
 - **Static Analysis**
 
 - **Intermediate Representation**

@@ -1,4 +1,14 @@
-from .base_parser import Binary, Expr, Grouping, Literal, Print, Statement, Unary
+from .base_parser import (
+    Binary,
+    Expr,
+    Grouping,
+    Literal,
+    Print,
+    Statement,
+    Unary,
+    Var,
+    Variable,
+)
 from .token import Token, TokenType
 
 
@@ -11,11 +21,7 @@ class Parser:
     def parse(self):
         statements: list[Statement] = []
         while not self.is_at_end():
-            try:
-                statements.append(self.statement())
-            except Exception as err:
-                print("⚠️ Error: ", err)
-                break
+            statements.append(self.declaration())
         return statements
 
     def peek(self):
@@ -46,6 +52,25 @@ class Parser:
                 return True
 
         return False
+
+    def variable_declaration(self):
+        name = self.consume(TokenType.IDENTIFIER, "Expect variable naem.")
+        initializer = None
+        if self.match(TokenType.EQUAL):
+            initializer = self.expression()
+
+        self.consume(TokenType.SEMICOLON, "Expect ; after declaration.")
+        return Var(name, initializer)
+
+    def declaration(self):
+        try:
+            if self.match(TokenType.VAR):
+                pass
+
+            return self.statement()
+        except Exception:
+            self.synchronize()
+            return None
 
     def statement(self) -> Statement:
         if self.match(TokenType.PRINT):
@@ -129,6 +154,9 @@ class Parser:
 
         if self.match(TokenType.STRING, TokenType.NUMBER):
             return Literal(self.previous().literal)
+
+        if self.match(TokenType.IDENTIFIER):
+            return Variable(self.previous())
 
         if self.match(TokenType.LEFT_PAREN):
             expression = self.expression()
