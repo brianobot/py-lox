@@ -70,7 +70,9 @@ class Interpreter(Visitor):
 
     def visit_print(self, expr: Print):
         value = self.evaluate(expr.expression)
-        print("Output: ", value)
+        print("----------------")
+        print("Std Output: ", value)
+        print("----------------")
         return None
 
     def visit_var(self, var: Var):
