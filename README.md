@@ -104,12 +104,12 @@ Each Production in a Context-Free Grammar has a
 
   ```
   12 (expression -> literal)
-  -12 -> (expression -> unary -> - expression)
+  -12 -> (expression -> unary -> - literal)
   ```
 
   In Parse tree, every single grammar production becomes a node in the Generated Abstract Syntax Tree
 
-  Pretty Printing usually refers to the process of converting a Tree into a string
+  Pretty Printing usually refers to the process of converting a Tree into a string, Usually to make the process of debugging the generated tree easier
 
   Remember that Parsing the process of moving from a string to the production/rules that generated that string, it is entirely possible to ambigious situation where a string can be mapped back to multiple rules, in order to stop or prevent this, when multiple operators are present in a string, a well defined precedence and associativity rule is followed to create a deterministic flow for that case.
 
