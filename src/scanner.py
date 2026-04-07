@@ -1,7 +1,5 @@
 from typing import Any
 
-import pytest
-
 from .token import Token, TokenType
 
 KEYWORDS = {
@@ -216,6 +214,8 @@ class Scanner:
 
 
 class TestScanner:
+    import pytest
+
     @pytest.mark.parametrize(
         "input",
         [
