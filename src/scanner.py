@@ -216,15 +216,24 @@ class Scanner:
 
 
 class TestScanner:
-    def test_is_match_is_true(self):
-        scanner = Scanner("ABC")
-        assert scanner.is_match("A")
-        assert scanner.is_match("B")
-        assert scanner.is_match("C")
+    @pytest.mark.parametrize(
+        "input",
+        [
+            "ABC",
+            "123",
+        ],
+    )
+    def test_is_match_is_true(self, input: str):
+        scanner = Scanner(input)
+        assert scanner.is_match(input[0])
+        assert scanner.is_match(input[1])
+        assert scanner.is_match(input[2])
 
-        scanner = Scanner("123")
-        assert not scanner.is_match("2")
-        assert scanner.is_match("1")
+        scanner = Scanner(input)
+        assert not scanner.is_match(input[1])
+        assert scanner.is_match(input[0])
+        assert scanner.is_match(input[1])
+        assert scanner.is_match(input[2])
 
     def test_is_at_end_and_advance(self):
         scanner = Scanner("")
@@ -360,6 +369,22 @@ class TestScanner:
         scanner.scan_token()
 
         assert scanner.current == len(scanner.source) - 1
+
+    @pytest.mark.parametrize(
+        "input,token_count",
+        [
+            ("12.23 12.23 34.23", 4),
+            ('12.34 "Brian" 12.34', 4),
+            ("(1+2) >= (2-1);", 13),
+            ("print 123.2423", 3),
+            ("class Animal { }", 5),
+        ],
+    )
+    def test_long_string_of_codes(self, input: str, token_count: int):
+        scanner = Scanner(input)
+        tokens = scanner.scan_tokens()
+
+        assert len(tokens) == token_count
 
 
 if __name__ == "__main__":
