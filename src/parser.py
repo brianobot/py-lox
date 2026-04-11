@@ -1,3 +1,5 @@
+import pytest
+
 from .base_parser import (
     Binary,
     Expr,
@@ -15,8 +17,9 @@ from .token import Token, TokenType
 class Parser:
     # each grammar rule from our stratified rule becomes a method in this class
     def __init__(self, tokens: list[Token]):
-        self.tokens = tokens
-        self.current = 0
+        self._tokens = tokens
+        self._current = 0
+        """index of next token waiting to be consumed"""
 
     def parse(self):
         statements: list[Statement] = []
@@ -25,14 +28,14 @@ class Parser:
         return statements
 
     def peek(self):
-        return self.tokens[self.current]
+        return self._tokens[self._current]
 
     def previous(self):
-        return self.tokens[self.current - 1]
+        return self._tokens[self._current - 1]
 
     def advance(self):
         if not self.is_at_end():
-            self.current += 1
+            self._current += 1
 
         return self.previous()
 
@@ -163,7 +166,7 @@ class Parser:
             self.consume(TokenType.RIGHT_PAREN, "Expect ) after expression!")
             return Grouping(expression)
 
-        return ParseError.error(self.peek(), "Expect Expression.")
+        raise ParseError.error(self.peek(), "Expect Expression.")
 
     def consume(self, token_type: TokenType, message: str):
         if self.check(token_type):
@@ -200,7 +203,7 @@ class ParseError(Exception):
         from .main import Lox
 
         Lox.error(token, message)
-        raise ParseError()
+        return ParseError()
 
 
 class TestParser:
@@ -265,3 +268,10 @@ class TestParser:
         )
 
         assert parser.match(TokenType.NUMBER) is True
+
+    def test_raise_exception(self):
+        with pytest.raises(ParseError) as err:  # noqa
+            raise ParseError.error(
+                Token(TokenType.AND, "", None, 1),
+                "Sample Error Message",
+            )
