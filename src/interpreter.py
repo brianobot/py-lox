@@ -32,6 +32,11 @@ class Interpreter(Visitor):
             runtime_error = RunTimeError(None, str(err))
             return Lox.runtime_error(runtime_error)
 
+    def stringify(self, string: str):
+        if string.endswith(".0"):
+            return string[:-2]
+        return string
+
     def is_truthy(self, object: Any):
         if object is None:
             return False
@@ -45,13 +50,13 @@ class Interpreter(Visitor):
 
     def check_number_operand(self, operator: Token, operand: Any):
         if isinstance(operand, float):
-            return
+            return True
 
         raise RunTimeError(operator, "Operand must be a Number")
 
     def check_number_operands(self, operator: Token, left: Any, right: Any):
         if isinstance(left, float) and isinstance(right, float):
-            return
+            return True
 
         raise RunTimeError(operator, "Operands must be Numbers")
 
@@ -98,6 +103,8 @@ class Interpreter(Visitor):
                 return -right
             case TokenType.BANG:
                 return not self.is_truthy(right)
+            case _:
+                raise ValueError("Unexpected Unary Operator type")
 
     def visit_binary(self, binary: "Binary"):
         left = self.evaluate(binary.left)
@@ -107,6 +114,15 @@ class Interpreter(Visitor):
             case TokenType.MINUS:
                 self.check_number_operands(binary.operator, left, right)
                 return left - right
+            case TokenType.PLUS:
+                if isinstance(left, str) and isinstance(right, str):
+                    return left + right
+                if isinstance(left, float) and isinstance(right, float):
+                    return left + right
+
+                raise RunTimeError(
+                    binary.operator, "Operands must be two numbers or two strings."
+                )
             case TokenType.SLASH:
                 self.check_number_operands(binary.operator, left, right)
                 if right == 0:
@@ -118,28 +134,24 @@ class Interpreter(Visitor):
             case TokenType.STAR:
                 self.check_number_operands(binary.operator, left, right)
                 return left * right
-            case TokenType.PLUS:
-                if isinstance(left, str) and isinstance(right, str):
-                    return left + right
-                if isinstance(left, float) and isinstance(right, float):
-                    return left + right
-
-                raise RunTimeError(
-                    binary.operator, "Operands must be two numbers or two strings."
-                )
-
             case TokenType.GREATER:
+                self.check_number_operands(binary.operator, left, right)
                 return left > right
             case TokenType.GREATER_EQUAL:
+                self.check_number_operands(binary.operator, left, right)
                 return left >= right
             case TokenType.LESS:
+                self.check_number_operands(binary.operator, left, right)
                 return left < right
             case TokenType.LESS_EQUAL:
+                self.check_number_operands(binary.operator, left, right)
                 return left <= right
             case TokenType.BANG_EQUAL:
                 return not self.is_equal(left, right)
             case TokenType.EQUAL_EQUAL:
                 return self.is_equal(left, right)
+            case _:
+                raise ValueError("Unexpected Form")
 
 
 class RunTimeError(Exception):

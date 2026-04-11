@@ -43,7 +43,7 @@ Compilation Steps
 
   for the acute reader, you might notice an error with parsing print function, I have just temporarily given up and fixing that to maintain learning progress at all cost, i would definitely resolve that soon, also the lexeme for the tokens are not correct
 
-- **Parsing**: This stage involves reading in the token stream from the lexxing stage and building an internal representation of the expressions, usually called a Syntax Tree, it's important to understand that in the lexxing stage, the unit of grammar was each character, but in the parsing stage, the unit of grammar is the token and expressions, and each node in our Syntax tree would map to a
+- **Parsing**: This is the process of converting a sequence of tokens into a syntax tree. This stage involves reading in the token stream from the lexxing stage and building an internal representation of the expressions, usually called a Syntax Tree, it's important to understand that in the lexxing stage, the unit of grammar was each character, but in the parsing stage, the unit of grammar is the token and expressions, and each node in our Syntax tree would map to a
 token or an expression.
 
 Like the scanner the parser consumes a flat sequence, but unlike the scanner, the consumed items are tokens and not characters.
@@ -116,18 +116,18 @@ Each Production in a Context-Free Grammar has a
   To fix this issue related to precedence, we define the grammar again but including seperate rules for each precedence level
 
   ```Updated Grammar Rule (from lowest precedence level to highest)
-  expression    -> equality
-  equality      -> comparison( ("!=" | "==") comparison)*;
+  expression    -> equality; this makes any expression at any precedence level
+  equality      -> comparison( ("!=" | "==") comparison)*; this covers all precedence levels too
   comparison    -> term ( (">" | ">=" | "<" | "<=") term)*;
   term          -> factor ( ("+" | "-") factor)*;
   factor        -> unary ( ("/" | "*") unary )*;
-  unary         -> ("!" | "-") unary | primary;
-  primary       -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")";
+  unary         -> ("!" | "-") unary | primary;  starts with an unary operator followed by the operand
+  primary       -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"; this contains all the literals and a grouping of expressions
   ```
 
-  this structure basically enforces that the higher precendence rules are evaluated first before the lower ones
+  this structure basically enforces that the higher precendence rules are evaluated first before the lower ones, each rule here only matches expression at it's precedence level or higher
 
-  Recursive Decent parser is a literal transformation of grammar rules into imperative code
+  Recursive Decent parser is a literal transformation of grammar rules into imperative code. Each rule becomes a function
 
   The parser has 2 main jobs,
   - Given a valid sequence of tokens, produce a corresponding syntax tree

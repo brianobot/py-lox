@@ -1,7 +1,6 @@
 import sys
 
 from .interpreter import Interpreter, RunTimeError
-from .parser import Parser
 from .scanner import Scanner
 from .token import Token, TokenType
 
@@ -43,26 +42,26 @@ class Lox:
 
     def run(self, source: str):
         scanner = Scanner(source)
-        tokens = scanner.scan_tokens()
+        tokens = scanner.scan_tokens()  # noqa
 
         # for token in tokens:
         #     print(token)
 
-        parser = Parser(tokens)
-        statements = parser.parse()
+        # parser = Parser(tokens)
+        # statements = parser.parse()
 
-        if not statements:
-            print("Invalid Expression: ", statements)
-            return None
+        # if not statements:
+        #     print("Invalid Expression: ", statements)
+        #     return None
 
-        # ast_printer = ASTPrinterVisitor()
-        # tree = ast_printer.print(expression)
-        # print("AST\n", tree)
+        # # ast_printer = ASTPrinterVisitor()
+        # # tree = ast_printer.print(expression)
+        # # print("AST\n", tree)
 
-        value = self.interpreter.interpret(statements)
-        print("----------------")
-        print(f"Value = {value}")
-        print("----------------")
+        # value = self.interpreter.interpret(statements)
+        # print("----------------")
+        # print(f"Value = {value}")
+        # print("----------------")
 
     @classmethod
     def error(cls, token: Token, message: str):

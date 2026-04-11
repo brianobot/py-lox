@@ -169,7 +169,7 @@ class Scanner:
         if self.peek() == '"':
             pass
         else:
-            Lox.error(self.line, "Unterminated string.")
+            Lox.error(self.tokens[-1], "Unterminated string.")
             return
 
         value = self.source[self.start + 1 : self.current]

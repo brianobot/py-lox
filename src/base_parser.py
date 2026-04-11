@@ -41,7 +41,7 @@ class Visitor(ABC):
 
 class Expression(ABC):
     @abstractmethod
-    def accept(self, visitor: "Visitor"):
+    def accept(self, visitor: "Visitor") -> Any:
         pass
 
 
@@ -90,7 +90,7 @@ class Variable(Expression):
 
 class Statement(ABC):
     @abstractmethod
-    def accept(self, visitor: "Visitor"):
+    def accept(self, visitor: "Visitor") -> Any:
         pass
 
 
