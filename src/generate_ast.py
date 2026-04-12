@@ -112,6 +112,7 @@ def main():
     }
 
     statement_mapping = {
+        "Block": "statements: list[Statement]",
         "Expr": "expression: Expression",
         "Print": "expression: Expression",
         "Var": "name: Token, initializer: Expression",

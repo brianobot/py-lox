@@ -31,11 +31,15 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
+    def visit_block(self, block: "Block") -> Any:
+        pass
+
+    @abstractmethod
     def visit_expr(self, expr: "Expr") -> Any:
         pass
 
     @abstractmethod
-    def visit_print(self, expression: "Print") -> Any:
+    def visit_print(self, print: "Print") -> Any:
         pass
 
     @abstractmethod
@@ -105,6 +109,14 @@ class Statement(ABC):
     @abstractmethod
     def accept(self, visitor: "Visitor"):
         pass
+
+
+@dataclass
+class Block(Statement):
+    statements: list[Statement]
+
+    def accept(self, visitor: Visitor):
+        return visitor.visit_block(self)
 
 
 @dataclass

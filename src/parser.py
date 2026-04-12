@@ -3,6 +3,7 @@ import pytest
 from .base_parser import (
     Assign,
     Binary,
+    Block,
     Expr,
     Grouping,
     Literal,
@@ -82,7 +83,18 @@ class Parser:
         if self.match(TokenType.PRINT):
             return self.print_statement()
 
+        if self.match(TokenType.LEFT_BRACE):
+            return Block(self.block())
+
         return self.expression_statement()
+
+    def block(self):
+        statements: list[Statement] = []
+        while not self.check(TokenType.RIGHT_BRACE) and not self.is_at_end():
+            statements.append(self.declaration())
+
+        self.consume(TokenType.RIGHT_BRACE, "Expect '}' after block.")
+        return statements
 
     def expression_statement(self):
         expression = self.expression()
