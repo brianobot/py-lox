@@ -169,6 +169,23 @@ Each Production in a Context-Free Grammar has a
   primary       -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER;
   ```
 
+  In order to support variable assignment we introduce a new rule
+  ```
+  program       -> declaration* EOF;
+  declaration   -> varDecl | statement ;
+  varDecl       -> "var" IDENTIFIER ( "=" expression)? ";" ;
+  statement     -> exprStmt | printStmt;
+  exprStmt      -> expresssion ";" ;
+  printStmt     -> "print" expression ";" ;
+  expression    -> assigment;
+  assignment    -> IDENTIFER "=" assignment | equality;
+  equality      -> comparison( ("!=" | "==") comparison)*;
+  comparison    -> term ( (">" | ">=" | "<" | "<=") term)*;
+  term          -> factor ( ("+" | "-") factor)*;
+  factor        -> unary ( ("/" | "*") unary )*;
+  unary         -> ("!" | "-") unary | primary;
+  primary       -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER;
+  ```
 - **Static Analysis**
 
 - **Intermediate Representation**

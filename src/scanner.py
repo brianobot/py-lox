@@ -80,7 +80,7 @@ class Scanner:
                 )
             case "<":
                 self.add_token(
-                    TokenType.LESS_EQUAL if self.is_match("") else TokenType.LESS,
+                    TokenType.LESS_EQUAL if self.is_match("=") else TokenType.LESS,
                     f"{c}=" if self.peek() == "=" else c,
                 )
             case ">":
@@ -202,6 +202,9 @@ class Scanner:
         self.add_token(TokenType.NUMBER, value, float(value))
 
     def identifier(self):
+        # this keeps track of where the indentifer started in
+        # order to slice the source code correctly to get the literal
+        self.start = self.current
         while self.peek_next().isalnum() and not self.is_at_end():
             self.advance()
 
@@ -342,6 +345,7 @@ class TestScanner:
             ("true;", TokenType.TRUE, "true"),
             ("false", TokenType.FALSE, "false"),
             ("false;", TokenType.FALSE, "false"),
+            ("=", TokenType.EQUAL, "="),
         ],
     )
     def test_identifier(self, keyword: str, token_type: TokenType, token_lexeme: str):
@@ -378,6 +382,7 @@ class TestScanner:
             ("(1+2) >= (2-1);", 13),
             ("print 123.2423", 3),
             ("class Animal { }", 5),
+            ("print true;", 4),
         ],
     )
     def test_long_string_of_codes(self, input: str, token_count: int):
@@ -388,6 +393,6 @@ class TestScanner:
 
 
 if __name__ == "__main__":
-    scanner = Scanner('"brian"\n"brian"')
+    scanner = Scanner(">= == <= !=")
     tokens = scanner.scan_tokens()
     print(*tokens, sep="\n")

@@ -3,7 +3,10 @@ from io import TextIOWrapper
 
 
 def define_visitor(
-    file: TextIOWrapper, base_class: str, expression_mapping: dict[str, str]
+    file: TextIOWrapper,
+    base_class: str,
+    expression_mapping: dict[str, str],
+    statement_mapping: dict[str, str],
 ):
     file.write("class Visitor(ABC):\n")
 
@@ -14,8 +17,20 @@ def define_visitor(
         )
         file.write("\t\tpass\n\n")
 
+    for statement_type, fields in statement_mapping.items():
+        file.write("\t@abstractmethod\n")
+        file.write(
+            f'\tdef visit_{statement_type.lower()}(self, {statement_type.lower()}: "{statement_type}") -> Any:\n'
+        )
+        file.write("\t\tpass\n\n")
 
-def define_ast(output_path: str, base_class: str, expression_mapping: dict[str, str]):
+
+def define_ast(
+    output_path: str,
+    base_class: str,
+    expression_mapping: dict[str, str],
+    statement_mapping: dict[str, str],
+):
     with open(output_path, "w") as file:
         # Write imports
         file.write("from typing import Any\n")
@@ -24,7 +39,7 @@ def define_ast(output_path: str, base_class: str, expression_mapping: dict[str, 
         file.write("from .token import Token\n\n\n")
 
         # definie the visitor
-        define_visitor(file, base_class, expression_mapping)
+        define_visitor(file, base_class, expression_mapping, statement_mapping)
 
         # define the Expression base class
         file.writelines(["\n", "\n"])
@@ -86,27 +101,30 @@ def main():
         exit(64)
 
     output_dir = sys.argv[1]
+
+    expression_mapping = {
+        "Literal": "value: Any",
+        "Grouping": "expression: Expression",
+        "Unary": "operator: Token, right: Expression",
+        "Assign": "name: Token, value: Expression",
+        "Binary": "left: Expression, operator: Token, right: Expression",
+        "Variable": "name: Token",
+    }
+
+    statement_mapping = {
+        "Expr": "expression: Expression",
+        "Print": "expression: Expression",
+        "Var": "name: Token, initializer: Expression",
+    }
+
     define_ast(
         output_dir,
         "Expression",
-        {
-            "Literal": "value: Any",
-            "Grouping": "expression: Expression",
-            "Unary": "operator: Token, right: Expression",
-            "Binary": "left: Expression, operator: Token, right: Expression",
-            "Variable": "name: Token",
-        },
+        expression_mapping,
+        statement_mapping,
     )
 
-    append_to_ast(
-        output_dir,
-        "Statement",
-        {
-            "Expr": "expression: Expression",
-            "Print": "expression: Expression",
-            "Var": "name: Token, initializer: Expression",
-        },
-    )
+    append_to_ast(output_dir, "Statement", statement_mapping)
 
 
 if __name__ == "__main__":
