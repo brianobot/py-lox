@@ -1,8 +1,22 @@
 import sys
+from typing import Any
 
 from .interpreter import Interpreter, RunTimeError
+from .parser import Parser
 from .scanner import Scanner
 from .token import Token, TokenType
+
+
+def green_print(value: Any):
+    print("\033[92m{}\033[00m".format(value))
+
+
+def yellow_print(value: Any):
+    print("\033[33m{}\033[00m".format(value))
+
+
+def crimson_print(value: Any):
+    print("\033[31m{}\033[00m".format(value))
 
 
 class Lox:
@@ -41,27 +55,26 @@ class Lox:
             self.has_error = False
 
     def run(self, source: str):
+        # the compilation pipeline
+        # 1. Scanning and Tokenization
         scanner = Scanner(source)
         tokens = scanner.scan_tokens()  # noqa
 
-        # for token in tokens:
-        #     print(token)
+        for token in tokens:
+            green_print(token)
 
-        # parser = Parser(tokens)
-        # statements = parser.parse()
+        # 2. Parsing tokens into AST
+        parser = Parser(tokens)
+        statements = parser.parse()
 
-        # if not statements:
-        #     print("Invalid Expression: ", statements)
-        #     return None
+        for statement in statements:
+            yellow_print(statement)
 
-        # # ast_printer = ASTPrinterVisitor()
-        # # tree = ast_printer.print(expression)
-        # # print("AST\n", tree)
+        if self.has_error:
+            return
 
-        # value = self.interpreter.interpret(statements)
-        # print("----------------")
-        # print(f"Value = {value}")
-        # print("----------------")
+        # 3. Executing the AST
+        self.interpreter.interpret(statements)
 
     @classmethod
     def error(cls, token: Token, message: str):
@@ -77,10 +90,8 @@ class Lox:
 
     @classmethod
     def runtime_error(cls, error: RunTimeError):
-        print(
-            error.get_message()
-            + f"\n[line {error.operator.line if error.operator else ''}]"
-        )
+        error_detail = f"\n[line {error.operator.line if error.operator else ''}]"
+        print(error.get_message() + error_detail)
         cls.has_runtime_error = True
 
 

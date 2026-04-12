@@ -19,11 +19,11 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
-    def visit_binary(self, binary: "Binary") -> Any:
+    def visit_assign(self, assign: "Assign") -> Any:
         pass
 
     @abstractmethod
-    def visit_expr(self, expr: "Expr") -> Any:
+    def visit_binary(self, binary: "Binary") -> Any:
         pass
 
     @abstractmethod
@@ -31,7 +31,11 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
-    def visit_print(self, expr: "Print") -> Any:
+    def visit_expr(self, expr: "Expr") -> Any:
+        pass
+
+    @abstractmethod
+    def visit_print(self, expression: "Print") -> Any:
         pass
 
     @abstractmethod
@@ -41,7 +45,7 @@ class Visitor(ABC):
 
 class Expression(ABC):
     @abstractmethod
-    def accept(self, visitor: "Visitor") -> Any:
+    def accept(self, visitor: "Visitor"):
         pass
 
 
@@ -71,6 +75,15 @@ class Unary(Expression):
 
 
 @dataclass
+class Assign(Expression):
+    name: Token
+    value: Expression
+
+    def accept(self, visitor: Visitor):
+        return visitor.visit_assign(self)
+
+
+@dataclass
 class Binary(Expression):
     left: Expression
     operator: Token
@@ -90,7 +103,7 @@ class Variable(Expression):
 
 class Statement(ABC):
     @abstractmethod
-    def accept(self, visitor: "Visitor") -> Any:
+    def accept(self, visitor: "Visitor"):
         pass
 
 

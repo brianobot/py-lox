@@ -1,6 +1,7 @@
 from typing import Any
 
 from .base_parser import (
+    Assign,
     Binary,
     Expr,
     Expression,
@@ -18,7 +19,7 @@ from .token import Token, TokenType
 
 
 class Interpreter(Visitor):
-    environment = Environment()
+    _environment = Environment()
 
     def interpret(self, statements: list[Statement]):
         from .main import Lox
@@ -32,10 +33,11 @@ class Interpreter(Visitor):
             runtime_error = RunTimeError(None, str(err))
             return Lox.runtime_error(runtime_error)
 
-    def stringify(self, string: str):
-        if string.endswith(".0"):
-            return string[:-2]
-        return string
+    def stringify(self, string: Any):
+        str_form = str(string)
+        if str_form.endswith(".0"):
+            return str_form[:-2]
+        return str_form
 
     def is_truthy(self, object: Any):
         if object is None:
@@ -71,21 +73,19 @@ class Interpreter(Visitor):
         return None
 
     def visit_variable(self, variable: Variable):
-        return self.environment.get(variable.name)
+        return self._environment.get(variable.name)
 
-    def visit_print(self, expr: Print):
-        value = self.evaluate(expr.expression)
-        print("----------------")
-        print("Std Output: ", value)
-        print("----------------")
+    def visit_print(self, expression: Print):
+        value = self.evaluate(expression.expression)
+        print(self.stringify(value))
         return None
 
     def visit_var(self, var: Var):
         value = None
-        if var.initializer is None:
+        if var.initializer is not None:
             value = self.evaluate(var.initializer)
 
-        self.environment.define(var.name.lexeme, value)
+        self._environment.define(var.name.lexeme, value)
         return None
 
     def visit_literal(self, literal: "Literal"):
@@ -105,6 +105,11 @@ class Interpreter(Visitor):
                 return not self.is_truthy(right)
             case _:
                 raise ValueError("Unexpected Unary Operator type")
+
+    def visit_assign(self, assign: "Assign"):
+        value = self.evaluate(assign.value)
+        self._environment.assign(assign.name, value)
+        return value
 
     def visit_binary(self, binary: "Binary"):
         left = self.evaluate(binary.left)

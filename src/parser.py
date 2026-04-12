@@ -1,6 +1,7 @@
 import pytest
 
 from .base_parser import (
+    Assign,
     Binary,
     Expr,
     Grouping,
@@ -68,12 +69,14 @@ class Parser:
     def declaration(self):
         try:
             if self.match(TokenType.VAR):
-                pass
+                return self.variable_declaration()
 
-            return self.statement()
-        except Exception:
+            statement = self.statement()
+        except ParseError:
             self.synchronize()
             return None
+
+        return statement
 
     def statement(self) -> Statement:
         if self.match(TokenType.PRINT):
@@ -92,7 +95,22 @@ class Parser:
         return Print(value)
 
     def expression(self):
-        return self.equality()
+        return self.assignment()
+
+    def assignment(self):
+        expression = self.equality()
+
+        if self.match(TokenType.EQUAL):
+            equals = self.previous()
+            value = self.assignment()
+
+            if isinstance(expression, Variable):
+                name = expression.name
+                return Assign(name, value)
+
+            ParseError.error(equals, "Invalid Assigment Target")
+
+        return expression
 
     def equality(self):
         expression = self.comparison()
@@ -163,10 +181,12 @@ class Parser:
 
         if self.match(TokenType.LEFT_PAREN):
             expression = self.expression()
-            self.consume(TokenType.RIGHT_PAREN, "Expect ) after expression!")
+            self.consume(
+                TokenType.RIGHT_PAREN, "Runtime error: Expect ) after expression!"
+            )
             return Grouping(expression)
 
-        raise ParseError.error(self.peek(), "Expect Expression.")
+        raise ParseError.error(self.peek(), "Runtime error: Expect Expression.")
 
     def consume(self, token_type: TokenType, message: str):
         if self.check(token_type):
