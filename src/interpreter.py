@@ -3,6 +3,7 @@ from typing import Any
 from .base_parser import (
     Assign,
     Binary,
+    Block,
     Expr,
     Expression,
     Grouping,
@@ -110,6 +111,22 @@ class Interpreter(Visitor):
         value = self.evaluate(assign.value)
         self._environment.assign(assign.name, value)
         return value
+
+    def visit_block(self, block: "Block"):
+        from .environment import Environment
+
+        self.execute_block(block.statements, Environment(self._environment))
+        return None
+
+    def execute_block(self, statements: list[Statement], environment: "Environment"):
+        previous = self._environment
+        try:
+            self._environment = environment
+
+            for statement in statements:
+                self.execute(statement)
+        finally:
+            self._environment = previous
 
     def visit_binary(self, binary: "Binary"):
         left = self.evaluate(binary.left)
