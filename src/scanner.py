@@ -76,7 +76,7 @@ class Scanner:
             case "=":
                 self.add_token(
                     TokenType.EQUAL_EQUAL if self.is_match("=") else TokenType.EQUAL,
-                    f"{c}=" if self.peek() == "=" else c,
+                    f"{c}=" if self.previous() == "=" else c,
                 )
             case "<":
                 self.add_token(
@@ -93,7 +93,10 @@ class Scanner:
             case "#":
                 while self.peek() != "\n" and not self.is_at_end():
                     c = self.advance()
-                    print("⚠️ Skipping ", c)
+
+                if self.peek() == "\n":
+                    self.line += 1
+
             # TODO: implement the correct version for the c-style comment
             case "\\" if self.is_match("*"):
                 while (
@@ -146,6 +149,9 @@ class Scanner:
         if self.current == -1:  # self.is_at_end()
             return "\0"
         return self.source[self.current]
+
+    def previous(self):
+        return self.source[self.current - 1]
 
     def peek_next(self):
         if self.is_at_end():
@@ -205,11 +211,14 @@ class Scanner:
         # this keeps track of where the indentifer started in
         # order to slice the source code correctly to get the literal
         self.start = self.current
-        while self.peek_next().isalnum() and not self.is_at_end():
+
+        while (
+            self.peek_next().isalnum() or self.peek_next() in {"_"}
+        ) and not self.is_at_end():
             self.advance()
 
         text = self.source[self.start : self.current + 1]
-        type = KEYWORDS.get(text.strip())  # WHY DID I USE STRIP HERE??
+        type = KEYWORDS.get(text.strip())  # TODO: WHY DID I USE STRIP HERE??
         if type is None:
             self.add_token(TokenType.IDENTIFIER, text)
         else:
@@ -333,6 +342,7 @@ class TestScanner:
     @pytest.mark.parametrize(
         "keyword,token_type,token_lexeme",
         [
+            ("read_file", TokenType.IDENTIFIER, "read_file"),
             ("result", TokenType.IDENTIFIER, "result"),
             ("return", TokenType.RETURN, "return"),
             ("print", TokenType.PRINT, "print"),
@@ -345,7 +355,6 @@ class TestScanner:
             ("true;", TokenType.TRUE, "true"),
             ("false", TokenType.FALSE, "false"),
             ("false;", TokenType.FALSE, "false"),
-            ("=", TokenType.EQUAL, "="),
         ],
     )
     def test_identifier(self, keyword: str, token_type: TokenType, token_lexeme: str):

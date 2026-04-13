@@ -108,6 +108,7 @@ def main():
         "Logical": "left: Expression, operator: Token, right: Expression",
         "Unary": "operator: Token, right: Expression",
         "Assign": "name: Token, value: Expression",
+        "Call": "callee: Expression, paren: Token, arguments: list['Expression']",
         "Binary": "left: Expression, operator: Token, right: Expression",
         "Variable": "name: Token",
     }
@@ -117,7 +118,7 @@ def main():
         "Expr": "expression: Expression",
         "If_Stmt": "condition: Expression, then_branch: Statement, else_branch: Statement",
         "While_Stmt": "condition: Expression, body: Statement",
-        "Print": "expression: Expression",
+        "Print_Stmt": "expression: Expression",
         "Var": "name: Token, initializer: Expression",
     }
 

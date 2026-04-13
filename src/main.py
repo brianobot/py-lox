@@ -26,6 +26,7 @@ class Lox:
     interpreter = Interpreter()
 
     def __init__(self):
+        print("✅ ", sys.argv)
         if len(sys.argv) > 2:
             print("Usage: py_lox [script]")
             exit(64)
@@ -54,6 +55,10 @@ class Lox:
             line = input("\033[31m>>> \033[00m")
             if not line:
                 break
+
+            if line == "exit" or line == "exit()":
+                break
+
             self.run(line)
             self.has_error = False
 

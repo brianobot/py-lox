@@ -1,10 +1,6 @@
-var a = 0;
-var temp;
+# Source Code: This line is a comment
+var name = "Brian Obot";
+print name;
 
-for (var b = 1; a < 10; b = temp + b) {
-   print a;
-   temp = a;
-   a = b;
-}
-
-print "Ended";
+var age = 25;
+print age
