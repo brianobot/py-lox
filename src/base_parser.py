@@ -15,6 +15,10 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
+    def visit_logical(self, logical: "Logical") -> Any:
+        pass
+
+    @abstractmethod
     def visit_unary(self, unary: "Unary") -> Any:
         pass
 
@@ -39,7 +43,15 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
-    def visit_print(self, print: "Print") -> Any:
+    def visit_if_stmt(self, if_stmt: "If_Stmt") -> Any:
+        pass
+
+    @abstractmethod
+    def visit_while_stmt(self, while_stmt: "While_Stmt") -> Any:
+        pass
+
+    @abstractmethod
+    def visit_print(self, expression: "Print") -> Any:
         pass
 
     @abstractmethod
@@ -49,7 +61,7 @@ class Visitor(ABC):
 
 class Expression(ABC):
     @abstractmethod
-    def accept(self, visitor: "Visitor"):
+    def accept(self, visitor: "Visitor") -> Any:
         pass
 
 
@@ -57,7 +69,7 @@ class Expression(ABC):
 class Literal(Expression):
     value: Any
 
-    def accept(self, visitor: Visitor):
+    def accept(self, visitor: Visitor) -> Any:
         return visitor.visit_literal(self)
 
 
@@ -65,8 +77,18 @@ class Literal(Expression):
 class Grouping(Expression):
     expression: Expression
 
-    def accept(self, visitor: Visitor):
+    def accept(self, visitor: Visitor) -> Any:
         return visitor.visit_grouping(self)
+
+
+@dataclass
+class Logical(Expression):
+    left: Expression
+    operator: Token
+    right: Expression
+
+    def accept(self, visitor: Visitor) -> Any:
+        return visitor.visit_logical(self)
 
 
 @dataclass
@@ -74,7 +96,7 @@ class Unary(Expression):
     operator: Token
     right: Expression
 
-    def accept(self, visitor: Visitor):
+    def accept(self, visitor: Visitor) -> Any:
         return visitor.visit_unary(self)
 
 
@@ -83,7 +105,7 @@ class Assign(Expression):
     name: Token
     value: Expression
 
-    def accept(self, visitor: Visitor):
+    def accept(self, visitor: Visitor) -> Any:
         return visitor.visit_assign(self)
 
 
@@ -93,7 +115,7 @@ class Binary(Expression):
     operator: Token
     right: Expression
 
-    def accept(self, visitor: Visitor):
+    def accept(self, visitor: Visitor) -> Any:
         return visitor.visit_binary(self)
 
 
@@ -101,13 +123,13 @@ class Binary(Expression):
 class Variable(Expression):
     name: Token
 
-    def accept(self, visitor: Visitor):
+    def accept(self, visitor: Visitor) -> Any:
         return visitor.visit_variable(self)
 
 
 class Statement(ABC):
     @abstractmethod
-    def accept(self, visitor: "Visitor"):
+    def accept(self, visitor: "Visitor") -> Any:
         pass
 
 
@@ -125,6 +147,25 @@ class Expr(Statement):
 
     def accept(self, visitor: Visitor):
         return visitor.visit_expr(self)
+
+
+@dataclass
+class If_Stmt(Statement):
+    condition: Expression
+    then_branch: Statement
+    else_branch: Statement
+
+    def accept(self, visitor: Visitor):
+        return visitor.visit_if_stmt(self)
+
+
+@dataclass
+class While_Stmt(Statement):
+    condition: Expression
+    body: Statement
+
+    def accept(self, visitor: Visitor):
+        return visitor.visit_while_stmt(self)
 
 
 @dataclass

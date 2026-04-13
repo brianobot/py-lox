@@ -7,13 +7,16 @@ from .base_parser import (
     Expr,
     Expression,
     Grouping,
+    If_Stmt,
     Literal,
+    Logical,
     Print,
     Statement,
     Unary,
     Var,
     Variable,
     Visitor,
+    While_Stmt,
 )
 from .environment import Environment
 from .token import Token, TokenType
@@ -95,6 +98,24 @@ class Interpreter(Visitor):
     def visit_grouping(self, grouping: "Grouping"):
         return self.evaluate(grouping.expression)
 
+    def visit_logical(self, logical: "Logical"):
+        left = self.evaluate(logical.left)
+
+        if logical.operator.type == TokenType.OR:
+            if self.is_truthy(left):
+                return left
+        else:
+            if not self.is_truthy(left):
+                return left
+
+        return self.evaluate(logical.right)
+
+    def visit_while_stmt(self, while_stmt: "While_Stmt"):
+        while self.is_truthy(while_stmt.condition):
+            self.execute(while_stmt.body)
+
+        return None
+
     def visit_unary(self, unary: "Unary"):
         right = self.evaluate(unary.right)
 
@@ -111,6 +132,14 @@ class Interpreter(Visitor):
         value = self.evaluate(assign.value)
         self._environment.assign(assign.name, value)
         return value
+
+    def visit_if_stmt(self, if_stmt: "If_Stmt") -> Any:
+        if self.is_truthy(self.evaluate(if_stmt.condition)):
+            self.execute(if_stmt.then_branch)
+        elif if_stmt.else_branch is not None:
+            self.execute(if_stmt.else_branch)
+
+        return None
 
     def visit_block(self, block: "Block"):
         from .environment import Environment

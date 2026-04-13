@@ -46,9 +46,12 @@ class Lox:
             self.run(file.read())
 
     def run_prompt(self):
-        print("Running Prompt")
+        print(
+            """\033[92mInteractive Shell for Pylox: Implemented In Python Programming language by Brian Obot\033[00m"""
+        )
+        print("\033[92mVersion: 2026.0.1a\033[00m")
         while True:
-            line = input("> ")
+            line = input("\033[31m>>> \033[00m")
             if not line:
                 break
             self.run(line)

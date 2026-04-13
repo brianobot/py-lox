@@ -45,7 +45,7 @@ def define_ast(
         file.writelines(["\n", "\n"])
         file.write(f"class {base_class}(ABC):\n")
         file.write("\t@abstractmethod\n")
-        file.write('\tdef accept(self, visitor: "Visitor"):\n')
+        file.write('\tdef accept(self, visitor: "Visitor") -> Any:\n')
         file.write("\t\tpass\n\n\n")
 
         # define the Classes that inherit from base class
@@ -62,7 +62,7 @@ def define_ast(
             file.write(f"{field_str}\n")
 
             # define the accept method on each type
-            file.write("\tdef accept(self, visitor: Visitor):\n")
+            file.write("\tdef accept(self, visitor: Visitor) -> Any:\n")
             file.write(
                 f"\t\treturn visitor.visit_{expression_type.lower()}(self)\n\n\n"
             )
@@ -74,7 +74,7 @@ def append_to_ast(output_path: str, base_class: str, statement_mapping: dict[str
         file.writelines(["\n", "\n"])
         file.write(f"class {base_class}(ABC):\n")
         file.write("\t@abstractmethod\n")
-        file.write('\tdef accept(self, visitor: "Visitor"):\n')
+        file.write('\tdef accept(self, visitor: "Visitor") -> Any:\n')
         file.write("\t\tpass\n\n\n")
 
         # define the Classes that inherit from base class
@@ -105,6 +105,7 @@ def main():
     expression_mapping = {
         "Literal": "value: Any",
         "Grouping": "expression: Expression",
+        "Logical": "left: Expression, operator: Token, right: Expression",
         "Unary": "operator: Token, right: Expression",
         "Assign": "name: Token, value: Expression",
         "Binary": "left: Expression, operator: Token, right: Expression",
@@ -114,6 +115,8 @@ def main():
     statement_mapping = {
         "Block": "statements: list[Statement]",
         "Expr": "expression: Expression",
+        "If_Stmt": "condition: Expression, then_branch: Statement, else_branch: Statement",
+        "While_Stmt": "condition: Expression, body: Statement",
         "Print": "expression: Expression",
         "Var": "name: Token, initializer: Expression",
     }
