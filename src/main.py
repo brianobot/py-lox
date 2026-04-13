@@ -53,8 +53,8 @@ class Lox:
         print("\033[92mVersion: 2026.0.1a\033[00m")
         while True:
             line = input("\033[31m>>> \033[00m")
-            if not line:
-                break
+            # if not line:
+            #     break
 
             if line == "exit" or line == "exit()":
                 break

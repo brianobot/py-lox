@@ -52,6 +52,9 @@ class Parser:
         return self.peek().type == TokenType.EOF
 
     def check(self, token_type: TokenType):
+        """
+        Checks the type of the current token without consuming it
+        """
         if self.is_at_end():
             return False
 
@@ -306,11 +309,12 @@ class Parser:
     def finish_call(self, callee: "Expression"):
         arguments: list[Any] = []
         if not self.check(TokenType.RIGHT_PAREN):
+            arguments.append(self.expression())
             while self.match(TokenType.COMMA):
                 if len(arguments) >= 255:
                     ParseError.error(self.peek(), "Can't have more than 255 arguments")
 
-                arguments.append(self.expression)
+                arguments.append(self.expression())
 
         paren = self.consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments")
         return Call(callee, paren, arguments)

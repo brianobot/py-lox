@@ -54,12 +54,25 @@ class BuiltIns:
         def to_string(self):
             return "<native fn>"
 
+    class PWD(LoxCallable):
+        def call(self, interpreter: "Interpreter", arguments: list[Any]):
+            import os
+
+            return print(os.getcwd())
+
+        def arity(self) -> int:
+            return 0
+
+        def to_string(self):
+            return "<native fn>"
+
 
 class Interpreter(Visitor):
     _globals = Environment()
     _environment = _globals
 
     def __init__(self):
+        self._globals.define("pwd", BuiltIns.PWD())
         self._globals.define("clock", BuiltIns.Clock())
         self._globals.define("read_file", BuiltIns.ReadFile())
 
