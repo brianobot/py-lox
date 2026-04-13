@@ -1,16 +1,19 @@
+import time
+from abc import ABC
 from typing import Any
 
 from .base_parser import (
     Assign,
     Binary,
     Block,
+    Call,
     Expr,
     Expression,
     Grouping,
     If_Stmt,
     Literal,
     Logical,
-    Print,
+    Print_Stmt,
     Statement,
     Unary,
     Var,
@@ -22,8 +25,43 @@ from .environment import Environment
 from .token import Token, TokenType
 
 
+class LoxCallable(ABC):
+    def call(self, interpreter: "Interpreter", arguments: list[Any]) -> Any:
+        pass
+
+    def arity(self) -> int:
+        return 0
+
+
+class BuiltIns:
+    class Clock(LoxCallable):
+        def call(self, interpreter: "Interpreter", arguments: list[Any]):
+            return time.time()
+
+        def arity(self) -> int:
+            return 0
+
+        def to_string(self):
+            return "<native fn>"
+
+    class ReadFile(LoxCallable):
+        def call(self, interpreter: "Interpreter", arguments: list[Any]):
+            return open(file=arguments[0], mode=arguments[1]).read()
+
+        def arity(self) -> int:
+            return 2
+
+        def to_string(self):
+            return "<native fn>"
+
+
 class Interpreter(Visitor):
-    _environment = Environment()
+    _globals = Environment()
+    _environment = _globals
+
+    def __init__(self):
+        self._globals.define("clock", BuiltIns.Clock())
+        self._globals.define("read_file", BuiltIns.ReadFile())
 
     def interpret(self, statements: list[Statement]):
         from .main import Lox
@@ -79,8 +117,8 @@ class Interpreter(Visitor):
     def visit_variable(self, variable: Variable):
         return self._environment.get(variable.name)
 
-    def visit_print(self, expression: Print):
-        value = self.evaluate(expression.expression)
+    def visit_print_stmt(self, print_stmt: Print_Stmt):
+        value = self.evaluate(print_stmt.expression)
         print(self.stringify(value))
         return None
 
@@ -127,6 +165,25 @@ class Interpreter(Visitor):
                 return not self.is_truthy(right)
             case _:
                 raise ValueError("Unexpected Unary Operator type")
+
+    def visit_call(self, call: "Call"):
+        callee = self.evaluate(call.callee)
+        arguments = []
+        for argument in call.arguments:
+            arguments.append(self.evaluate(argument))
+
+        if not isinstance(callee, LoxCallable):
+            raise RunTimeError(call.paren, "Can only call function and classes")
+
+        function: LoxCallable = callee
+
+        if len(arguments) != function.arity():
+            raise RunTimeError(
+                call.paren,
+                f"Expected {function.arity()} argument(s) but got {len(arguments)}",
+            )
+
+        return function.call(self, arguments)
 
     def visit_assign(self, assign: "Assign"):
         value = self.evaluate(assign.value)

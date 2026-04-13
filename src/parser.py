@@ -1,15 +1,19 @@
+from typing import Any
+
 import pytest
 
 from .base_parser import (
     Assign,
     Binary,
     Block,
+    Call,
     Expr,
+    Expression,
     Grouping,
     If_Stmt,
     Literal,
     Logical,
-    Print,
+    Print_Stmt,
     Statement,
     Unary,
     Var,
@@ -29,7 +33,7 @@ class Parser:
     def parse(self):
         statements: list[Statement] = []
         while not self.is_at_end():
-            statements.append(self.declaration())
+            statements.append(self.declaration())  # type: ignore
         return statements
 
     def peek(self):
@@ -103,7 +107,7 @@ class Parser:
     def block(self):
         statements: list[Statement] = []
         while not self.check(TokenType.RIGHT_BRACE) and not self.is_at_end():
-            statements.append(self.declaration())
+            statements.append(self.declaration())  # type: ignore
 
         self.consume(TokenType.RIGHT_BRACE, "Expect '}' after block.")
         return statements
@@ -172,7 +176,7 @@ class Parser:
     def print_statement(self):
         value = self.expression()
         self.consume(TokenType.SEMICOLON, "Expect ; after value")
-        return Print(value)
+        return Print_Stmt(value)
 
     def expression(self):
         return self.assignment()
@@ -263,7 +267,18 @@ class Parser:
             right = self.unary()
             return Unary(operator, right)
 
-        return self.primary()
+        return self.call()
+
+    def call(self):
+        expression = self.primary()
+
+        while True:
+            if self.match(TokenType.LEFT_PAREN):
+                expression = self.finish_call(expression)
+            else:
+                break
+
+        return expression
 
     def primary(self):
         if self.match(TokenType.FALSE):
@@ -287,6 +302,18 @@ class Parser:
             return Grouping(expression)
 
         raise ParseError.error(self.peek(), "Runtime error: Expect Expression.")
+
+    def finish_call(self, callee: "Expression"):
+        arguments: list[Any] = []
+        if not self.check(TokenType.RIGHT_PAREN):
+            while self.match(TokenType.COMMA):
+                if len(arguments) >= 255:
+                    ParseError.error(self.peek(), "Can't have more than 255 arguments")
+
+                arguments.append(self.expression)
+
+        paren = self.consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments")
+        return Call(callee, paren, arguments)
 
     def consume(self, token_type: TokenType, message: str):
         if self.check(token_type):

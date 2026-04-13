@@ -27,6 +27,10 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
+    def visit_call(self, call: "Call") -> Any:
+        pass
+
+    @abstractmethod
     def visit_binary(self, binary: "Binary") -> Any:
         pass
 
@@ -51,7 +55,7 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
-    def visit_print(self, expression: "Print") -> Any:
+    def visit_print_stmt(self, print_stmt: "Print_Stmt") -> Any:
         pass
 
     @abstractmethod
@@ -107,6 +111,16 @@ class Assign(Expression):
 
     def accept(self, visitor: Visitor) -> Any:
         return visitor.visit_assign(self)
+
+
+@dataclass
+class Call(Expression):
+    callee: Expression
+    paren: Token
+    arguments: list["Expression"]
+
+    def accept(self, visitor: Visitor) -> Any:
+        return visitor.visit_call(self)
 
 
 @dataclass
@@ -169,11 +183,11 @@ class While_Stmt(Statement):
 
 
 @dataclass
-class Print(Statement):
+class Print_Stmt(Statement):
     expression: Expression
 
     def accept(self, visitor: Visitor):
-        return visitor.visit_print(self)
+        return visitor.visit_print_stmt(self)
 
 
 @dataclass
