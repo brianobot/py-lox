@@ -17,7 +17,7 @@ class Environment:
     def get(self, name: Token):
         from .interpreter import RunTimeError
 
-        if self.values.get(name.lexeme):
+        if self.values.get(name.lexeme) is not None:
             return self.values[name.lexeme]
 
         if self.enclosing:
