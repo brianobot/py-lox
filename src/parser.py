@@ -1,3 +1,4 @@
+import typing
 from typing import Any
 
 import pytest
@@ -9,11 +10,13 @@ from .base_parser import (
     Call,
     Expr,
     Expression,
+    Function_Stmt,
     Grouping,
     If_Stmt,
     Literal,
     Logical,
     Print_Stmt,
+    Return_Stmt,
     Statement,
     Unary,
     Var,
@@ -69,7 +72,7 @@ class Parser:
         return False
 
     def variable_declaration(self):
-        name = self.consume(TokenType.IDENTIFIER, "Expect variable naem.")
+        name = self.consume(TokenType.IDENTIFIER, "Expect variable name.")
         initializer = None
         if self.match(TokenType.EQUAL):
             initializer = self.expression()
@@ -77,10 +80,31 @@ class Parser:
         self.consume(TokenType.SEMICOLON, "Expect ; after declaration.")
         return Var(name, initializer)
 
+    def function_declaration(self, kind: typing.Literal["function", "method"]):
+        name = self.consume(TokenType.IDENTIFIER, "Expect {kind} name.")
+        self.consume(TokenType.LEFT_PAREN, f"Expect '(' after {kind} name")
+        parameters: list[Token] = []
+        if not self.check(TokenType.RIGHT_PAREN):
+            parameters.append(
+                self.consume(TokenType.IDENTIFIER, "Expect Parameter name.")
+            )
+            while self.match(TokenType.COMMA):
+                parameters.append(
+                    self.consume(TokenType.IDENTIFIER, "Expect Parameter name.")
+                )
+
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after kind parameters")
+        self.consume(TokenType.LEFT_BRACE, "Expect '{' after function parameters")
+        body = self.block()
+        return Function_Stmt(name, parameters, body)
+
     def declaration(self):
         try:
             if self.match(TokenType.VAR):
                 return self.variable_declaration()
+
+            if self.match(TokenType.FUN):
+                return self.function_declaration("function")
 
             statement = self.statement()
         except ParseError:
@@ -98,6 +122,9 @@ class Parser:
 
         if self.match(TokenType.WHILE):
             return self.while_statement()
+
+        if self.match(TokenType.RETURN):
+            return self.return_statement()
 
         if self.match(TokenType.FOR):
             return self.for_loop_statement()
@@ -132,6 +159,15 @@ class Parser:
             else_branch = self.statement()
 
         return If_Stmt(condition, then_branch, else_branch)
+
+    def return_statement(self):
+        keyword = self.previous()
+        value = None
+        if not self.check(TokenType.SEMICOLON):
+            value = self.expression()
+
+        self.consume(TokenType.SEMICOLON, "Expect ';' after return value")
+        return Return_Stmt(keyword, value)
 
     def while_statement(self):
         self.consume(TokenType.LEFT_PAREN, "Expected '(' after 'while'.")
