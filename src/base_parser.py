@@ -51,11 +51,19 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
+    def visit_function_stmt(self, function_stmt: "Function_Stmt") -> Any:
+        pass
+
+    @abstractmethod
     def visit_while_stmt(self, while_stmt: "While_Stmt") -> Any:
         pass
 
     @abstractmethod
     def visit_print_stmt(self, print_stmt: "Print_Stmt") -> Any:
+        pass
+
+    @abstractmethod
+    def visit_return_stmt(self, return_stmt: "Return_Stmt") -> Any:
         pass
 
     @abstractmethod
@@ -174,6 +182,16 @@ class If_Stmt(Statement):
 
 
 @dataclass
+class Function_Stmt(Statement):
+    name: Token
+    params: list[Token]
+    body: list["Statement"]
+
+    def accept(self, visitor: Visitor):
+        return visitor.visit_function_stmt(self)
+
+
+@dataclass
 class While_Stmt(Statement):
     condition: Expression
     body: Statement
@@ -188,6 +206,15 @@ class Print_Stmt(Statement):
 
     def accept(self, visitor: Visitor):
         return visitor.visit_print_stmt(self)
+
+
+@dataclass
+class Return_Stmt(Statement):
+    keyword: Token
+    value: Expression
+
+    def accept(self, visitor: Visitor):
+        return visitor.visit_return_stmt(self)
 
 
 @dataclass

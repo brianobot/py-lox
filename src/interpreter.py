@@ -1,5 +1,6 @@
 import time
 from abc import ABC
+from dataclasses import dataclass
 from typing import Any
 
 from .base_parser import (
@@ -9,11 +10,13 @@ from .base_parser import (
     Call,
     Expr,
     Expression,
+    Function_Stmt,
     Grouping,
     If_Stmt,
     Literal,
     Logical,
     Print_Stmt,
+    Return_Stmt,
     Statement,
     Unary,
     Var,
@@ -65,6 +68,28 @@ class BuiltIns:
 
         def to_string(self):
             return "<native fn>"
+
+
+@dataclass
+class LoxFunction(LoxCallable):
+    declaration: Function_Stmt
+
+    def call(self, interpreter: "Interpreter", arguments: list[Any]):
+        environment = Environment(interpreter._globals)
+        for index in range(len(arguments)):
+            environment.define(self.declaration.params[index].lexeme, arguments[index])
+
+        try:
+            interpreter.execute_block(self.declaration.body, environment)
+        except Return as return_except:
+            return return_except.value
+        return None
+
+    def arity(self) -> int:
+        return len(self.declaration.params)
+
+    def to_string(self) -> str:
+        return f"<fn {self.declaration.name.lexeme}>"
 
 
 class Interpreter(Visitor):
@@ -167,6 +192,13 @@ class Interpreter(Visitor):
 
         return None
 
+    def visit_return_stmt(self, return_stmt: "Return_Stmt") -> Any:
+        value = None
+        if return_stmt.value is not None:
+            value = self.evaluate(return_stmt.value)
+
+        raise Return(value)
+
     def visit_unary(self, unary: "Unary"):
         right = self.evaluate(unary.right)
 
@@ -209,6 +241,11 @@ class Interpreter(Visitor):
         elif if_stmt.else_branch is not None:
             self.execute(if_stmt.else_branch)
 
+        return None
+
+    def visit_function_stmt(self, function_stmt: "Function_Stmt"):
+        function = LoxFunction(function_stmt)
+        self._environment.define(function_stmt.name.lexeme, function)
         return None
 
     def visit_block(self, block: "Block"):
@@ -273,6 +310,11 @@ class Interpreter(Visitor):
                 return self.is_equal(left, right)
             case _:
                 raise ValueError("Unexpected Form")
+
+
+@dataclass
+class Return(Exception):
+    value: Any
 
 
 class RunTimeError(Exception):
