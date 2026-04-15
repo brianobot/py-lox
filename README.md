@@ -188,7 +188,8 @@ Each Production in a Context-Free Grammar has a
   unary         -> ("!" | "-") unary | primary;
   primary       -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER;
   ```
-- **Static Analysis**
+- **Static Analysis**: Unlike the interpretation process where the AST is evaluated, the static analysis simply iterates over the
+AST and resolves all the variables it contains, in this stage, no side effects or process is actually done on the nodes of the AST and there is not control flow in this stage, loops are visited once and both branches of if statements are visited too, there's no short circuiting logic in this process.
 
 - **Intermediate Representation**
 

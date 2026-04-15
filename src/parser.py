@@ -33,7 +33,7 @@ class Parser:
         self._current = 0
         """index of next token waiting to be consumed"""
 
-    def parse(self):
+    def parse(self) -> list[Statement]:
         statements: list[Statement] = []
         while not self.is_at_end():
             statements.append(self.declaration())  # type: ignore
@@ -134,7 +134,7 @@ class Parser:
 
         return self.expression_statement()
 
-    def block(self):
+    def block(self) -> list[Statement]:
         statements: list[Statement] = []
         while not self.check(TokenType.RIGHT_BRACE) and not self.is_at_end():
             statements.append(self.declaration())  # type: ignore

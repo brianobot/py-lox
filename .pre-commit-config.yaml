@@ -34,6 +34,5 @@ repos:
       - id: mypy
         additional_dependencies:
           - pydantic
-          - types-requests  # If you use requests
           - types-setuptools # This usually replaces what pkg-resources needed
           - types-PyYAML     # If you use YAML configs
