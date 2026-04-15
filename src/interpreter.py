@@ -72,10 +72,11 @@ class BuiltIns:
 
 @dataclass
 class LoxFunction(LoxCallable):
+    closure: Environment
     declaration: Function_Stmt
 
     def call(self, interpreter: "Interpreter", arguments: list[Any]):
-        environment = Environment(interpreter._globals)
+        environment = Environment(self.closure)
         for index in range(len(arguments)):
             environment.define(self.declaration.params[index].lexeme, arguments[index])
 
@@ -93,6 +94,7 @@ class LoxFunction(LoxCallable):
 
 
 class Interpreter(Visitor):
+    _locals: dict[Expression, int] = dict()
     _globals = Environment()
     _environment = _globals
 
@@ -142,8 +144,17 @@ class Interpreter(Visitor):
 
         raise RunTimeError(operator, "Operands must be Numbers")
 
+    def look_up_variable(self, name: Token, variable: Expression):
+        distance = self._locals.get(variable)
+        if distance:
+            return self._environment.get_at(distance, name.lexeme)
+        return self._globals.get(name)
+
     def execute(self, statement: Statement):
         return statement.accept(self)
+
+    def resolve(self, expression: Expression, depth: int):
+        self._locals[expression] = depth
 
     def evaluate(self, expression: Expression):
         return expression.accept(self)
@@ -153,7 +164,7 @@ class Interpreter(Visitor):
         return None
 
     def visit_variable(self, variable: Variable):
-        return self._environment.get(variable.name)
+        return self.look_up_variable(variable.name, variable)
 
     def visit_print_stmt(self, print_stmt: Print_Stmt):
         value = self.evaluate(print_stmt.expression)
@@ -232,7 +243,12 @@ class Interpreter(Visitor):
 
     def visit_assign(self, assign: "Assign"):
         value = self.evaluate(assign.value)
-        self._environment.assign(assign.name, value)
+
+        distance = self._locals.get(assign)
+        if distance:
+            self._environment.assign_at(distance, assign.name, value)
+        else:
+            self._globals.assign(assign.name, value)
         return value
 
     def visit_if_stmt(self, if_stmt: "If_Stmt") -> Any:
@@ -244,7 +260,7 @@ class Interpreter(Visitor):
         return None
 
     def visit_function_stmt(self, function_stmt: "Function_Stmt"):
-        function = LoxFunction(function_stmt)
+        function = LoxFunction(self._environment, function_stmt)
         self._environment.define(function_stmt.name.lexeme, function)
         return None
 
