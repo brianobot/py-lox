@@ -10,9 +10,9 @@ from src.token import Token
 from .base_parser import (
     Assign,
     Binary,
-    Block,
+    Block_Stmt,
     Call,
-    Expr,
+    Expr_Stmt,
     Expression,
     Function_Stmt,
     Grouping,
@@ -23,7 +23,7 @@ from .base_parser import (
     Return_Stmt,
     Statement,
     Unary,
-    Var,
+    Var_Stmt,
     Variable,
     Visitor,
     While_Stmt,
@@ -39,10 +39,18 @@ class Function:
     def __init__(self, fn) -> None:
         self.fn = fn
 
+    def __get__(self, obj, objtype=None):
+        if obj is None:
+            return self
+
+        import functools
+
+        return functools.partial(self, obj)
+
     def __call__(self, *args, **kwargs):
         fn = NameSpace.get_instance().get(self.fn)
         if not fn:
-            raise Exception("No Matching Function found")
+            raise Exception("No Matching Function Found")
 
         return fn(*args, **kwargs)
 
@@ -144,17 +152,17 @@ class Resolver(Visitor):
         scope = self.scopes[-1]
         scope[name.lexeme] = True
 
-    def visit_block(self, block: "Block"):
+    def visit_block(self, block: "Block_Stmt"):
         self.begin_scope()
         self.resolve(block.statements)
         self.end_scope()
         return None
 
-    def visit_var(self, var: "Var"):
-        self.declare(var.name)
-        if var.initializer is not None:
-            self.resolve(var.initializer)
-        self.define(var.name)
+    def visit_var_stmt(self, var_stmt: "Var_Stmt"):
+        self.declare(var_stmt.name)
+        if var_stmt.initializer is not None:
+            self.resolve(var_stmt.initializer)
+        self.define(var_stmt.name)
         return None
 
     def visit_variable(self, variable: "Variable"):
@@ -168,9 +176,9 @@ class Resolver(Visitor):
         self.resolve_local(variable, variable.name)
         return None
 
-    def visit_assign(self, assign: "Assign"):
-        self.resolve(assign.value)
-        self.resolve_local(assign, assign.name)
+    def visit_assign_stmt(self, assign_stmt: "Assign"):
+        self.resolve(assign_stmt.value)
+        self.resolve_local(assign_stmt, assign_stmt.name)
         return None
 
     def visit_function_stmt(self, function_stmt: "Function_Stmt"):
@@ -179,8 +187,8 @@ class Resolver(Visitor):
 
         self.resolve_function(function_stmt)
 
-    def visit_expr(self, expr: "Expr"):
-        self.resolve(expr.expression)
+    def visit_expr_stmt(self, expr_stmt: "Expr_Stmt"):
+        self.resolve(expr_stmt.expression)
         return None
 
     def visit_if_stmt(self, if_stmt: "If_Stmt"):

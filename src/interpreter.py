@@ -6,9 +6,9 @@ from typing import Any
 from .base_parser import (
     Assign,
     Binary,
-    Block,
+    Block_Stmt,
     Call,
-    Expr,
+    Expr_Stmt,
     Expression,
     Function_Stmt,
     Grouping,
@@ -19,7 +19,7 @@ from .base_parser import (
     Return_Stmt,
     Statement,
     Unary,
-    Var,
+    Var_Stmt,
     Variable,
     Visitor,
     While_Stmt,
@@ -108,6 +108,7 @@ class Interpreter(Visitor):
 
         try:
             for statement in statements:
+                print(f"✅✅✅ Statement: {statement}")
                 self.execute(statement)
         except RunTimeError as err:
             return Lox.runtime_error(err)
@@ -145,6 +146,8 @@ class Interpreter(Visitor):
         raise RunTimeError(operator, "Operands must be Numbers")
 
     def look_up_variable(self, name: Token, variable: Expression):
+        return self._environment.get(name)
+
         distance = self._locals.get(variable)
         if distance:
             return self._environment.get_at(distance, name.lexeme)
@@ -159,8 +162,8 @@ class Interpreter(Visitor):
     def evaluate(self, expression: Expression):
         return expression.accept(self)
 
-    def visit_expr(self, expr: Expr):
-        self.evaluate(expr.expression)
+    def visit_expr_stmt(self, expr_stmt: Expr_Stmt):
+        self.evaluate(expr_stmt.expression)
         return None
 
     def visit_variable(self, variable: Variable):
@@ -171,12 +174,12 @@ class Interpreter(Visitor):
         print(self.stringify(value))
         return None
 
-    def visit_var(self, var: Var):
+    def visit_var_stmt(self, var_stmt: Var_Stmt):
         value = None
-        if var.initializer is not None:
-            value = self.evaluate(var.initializer)
+        if var_stmt.initializer is not None:
+            value = self.evaluate(var_stmt.initializer)
 
-        self._environment.define(var.name.lexeme, value)
+        self._environment.define(var_stmt.name.lexeme, value)
         return None
 
     def visit_literal(self, literal: "Literal"):
@@ -264,10 +267,10 @@ class Interpreter(Visitor):
         self._environment.define(function_stmt.name.lexeme, function)
         return None
 
-    def visit_block(self, block: "Block"):
+    def visit_block_stmt(self, block_stmt: "Block_Stmt"):
         from .environment import Environment
 
-        self.execute_block(block.statements, Environment(self._environment))
+        self.execute_block(block_stmt.statements, Environment(self._environment))
         return None
 
     def execute_block(self, statements: list[Statement], environment: "Environment"):
