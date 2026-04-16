@@ -39,11 +39,11 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
-    def visit_block(self, block: "Block") -> Any:
+    def visit_block_stmt(self, block_stmt: "Block_Stmt") -> Any:
         pass
 
     @abstractmethod
-    def visit_expr(self, expr: "Expr") -> Any:
+    def visit_expr_stmt(self, expr_stmt: "Expr_Stmt") -> Any:
         pass
 
     @abstractmethod
@@ -67,7 +67,7 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
-    def visit_var(self, var: "Var") -> Any:
+    def visit_var_stmt(self, var_stmt: "Var_Stmt") -> Any:
         pass
 
 
@@ -156,19 +156,19 @@ class Statement(ABC):
 
 
 @dataclass
-class Block(Statement):
+class Block_Stmt(Statement):
     statements: list[Statement]
 
     def accept(self, visitor: Visitor):
-        return visitor.visit_block(self)
+        return visitor.visit_block_stmt(self)
 
 
 @dataclass
-class Expr(Statement):
+class Expr_Stmt(Statement):
     expression: Expression
 
     def accept(self, visitor: Visitor):
-        return visitor.visit_expr(self)
+        return visitor.visit_expr_stmt(self)
 
 
 @dataclass
@@ -218,9 +218,9 @@ class Return_Stmt(Statement):
 
 
 @dataclass
-class Var(Statement):
+class Var_Stmt(Statement):
     name: Token
     initializer: Expression
 
     def accept(self, visitor: Visitor):
-        return visitor.visit_var(self)
+        return visitor.visit_var_stmt(self)

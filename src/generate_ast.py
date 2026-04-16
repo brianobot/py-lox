@@ -114,14 +114,14 @@ def main():
     }
 
     statement_mapping = {
-        "Block": "statements: list[Statement]",
-        "Expr": "expression: Expression",
+        "Block_Stmt": "statements: list[Statement]",
+        "Expr_Stmt": "expression: Expression",
         "If_Stmt": "condition: Expression, then_branch: Statement, else_branch: Statement",
         "Function_Stmt": "name: Token, params: list[Token], body: list['Statement']",
         "While_Stmt": "condition: Expression, body: Statement",
         "Print_Stmt": "expression: Expression",
         "Return_Stmt": "keyword: Token, value: Expression",
-        "Var": "name: Token, initializer: Expression",
+        "Var_Stmt": "name: Token, initializer: Expression",
     }
 
     define_ast(

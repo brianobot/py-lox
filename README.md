@@ -191,6 +191,14 @@ Each Production in a Context-Free Grammar has a
 - **Static Analysis**: Unlike the interpretation process where the AST is evaluated, the static analysis simply iterates over the
 AST and resolves all the variables it contains, in this stage, no side effects or process is actually done on the nodes of the AST and there is not control flow in this stage, loops are visited once and both branches of if statements are visited too, there's no short circuiting logic in this process.
 
+  **Scope**: The scope of a binding is the part of the program where that binding is valid
+      - **Lexical Scoping**(Static Scoping): is determined by the location of the name in the source code also referred to as early binding
+      - **Dynamic Scoping**: Depends on the state of the program also referred as late binding
+
+  **Rule**: A variable usage refers to the preceding declaration with the same
+  name in the innermost scope that encloses the expression where the
+  variable is used.
+
 - **Intermediate Representation**
 
 - **Optimization**

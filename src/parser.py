@@ -1,14 +1,14 @@
 import typing
-from typing import Any
+from typing import Any, Union, cast
 
 import pytest
 
 from .base_parser import (
     Assign,
     Binary,
-    Block,
+    Block_Stmt,
     Call,
-    Expr,
+    Expr_Stmt,
     Expression,
     Function_Stmt,
     Grouping,
@@ -19,7 +19,7 @@ from .base_parser import (
     Return_Stmt,
     Statement,
     Unary,
-    Var,
+    Var_Stmt,
     Variable,
     While_Stmt,
 )
@@ -78,7 +78,9 @@ class Parser:
             initializer = self.expression()
 
         self.consume(TokenType.SEMICOLON, "Expect ; after declaration.")
-        return Var(name, initializer)
+        return Var_Stmt(
+            name, cast(Union[Assign, Unary, Any, Binary, Logical], initializer)
+        )
 
     def function_declaration(self, kind: typing.Literal["function", "method"]):
         name = self.consume(TokenType.IDENTIFIER, "Expect {kind} name.")
@@ -130,7 +132,7 @@ class Parser:
             return self.for_loop_statement()
 
         if self.match(TokenType.LEFT_BRACE):
-            return Block(self.block())
+            return Block_Stmt(self.block())
 
         return self.expression_statement()
 
@@ -145,7 +147,7 @@ class Parser:
     def expression_statement(self):
         expression = self.expression()
         self.consume(TokenType.SEMICOLON, "Expect ; after value")
-        return Expr(expression)
+        return Expr_Stmt(expression)
 
     def if_statement(self):
         self.consume(TokenType.LEFT_PAREN, "Expect '(' after if.")
@@ -158,7 +160,7 @@ class Parser:
         if self.match(TokenType.ELSE):
             else_branch = self.statement()
 
-        return If_Stmt(condition, then_branch, else_branch)
+        return If_Stmt(condition, then_branch, cast(Statement, else_branch))
 
     def return_statement(self):
         keyword = self.previous()
@@ -167,7 +169,7 @@ class Parser:
             value = self.expression()
 
         self.consume(TokenType.SEMICOLON, "Expect ';' after return value")
-        return Return_Stmt(keyword, value)
+        return Return_Stmt(keyword, cast(Union[Assign | Any | Binary, Logical], value))
 
     def while_statement(self):
         self.consume(TokenType.LEFT_PAREN, "Expected '(' after 'while'.")
@@ -200,7 +202,7 @@ class Parser:
         body = self.statement()
 
         if increment is not None:
-            body = Block([body, Expr(increment)])
+            body = Block_Stmt([body, Expr_Stmt(increment)])
 
         if condition is None:
             condition = Literal(True)
@@ -208,7 +210,7 @@ class Parser:
         body = While_Stmt(condition, body)
 
         if initializer is not None:
-            body = Block([initializer, body])
+            body = Block_Stmt([initializer, body])
 
         return body
 

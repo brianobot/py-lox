@@ -3,7 +3,6 @@ from typing import Any
 
 from .interpreter import Interpreter, RunTimeError
 from .parser import Parser
-from .resolver import Resolver
 from .scanner import Scanner
 from .token import Token, TokenType
 
@@ -27,7 +26,6 @@ class Lox:
     interpreter = Interpreter()
 
     def __init__(self):
-        print("✅ ", sys.argv)
         if len(sys.argv) > 2:
             print("Usage: py_lox [script]")
             exit(64)
@@ -83,8 +81,8 @@ class Lox:
             return
 
         # 2b Run the Resolver
-        resolver = Resolver(self.interpreter)
-        resolver.resolve()
+        # resolver = Resolver(self.interpreter)
+        # resolver.resolve(statements)
 
         # 3. Executing the AST
         self.interpreter.interpret(statements)
