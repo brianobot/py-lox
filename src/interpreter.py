@@ -1,16 +1,18 @@
 import time
 from abc import ABC
-from dataclasses import dataclass
-from typing import Any
+from dataclasses import dataclass, field
+from typing import Any, cast
 
 from .base_parser import (
     Assign,
     Binary,
     Block_Stmt,
     Call,
+    Class_Stmt,
     Expr_Stmt,
     Expression,
     Function_Stmt,
+    Get,
     Grouping,
     If_Stmt,
     Literal,
@@ -91,6 +93,33 @@ class LoxFunction(LoxCallable):
 
     def to_string(self) -> str:
         return f"<fn {self.declaration.name.lexeme}>"
+
+
+@dataclass
+class LoxClass(LoxCallable):
+    name: str
+
+    def call(self, interpreter: "Interpreter", arguments: list[Any]) -> Any:
+        instance = LoxInstance(self)
+        return instance
+
+    def arity(self) -> int:
+        return 0
+
+    def to_string(self) -> str:
+        return self.name
+
+
+@dataclass
+class LoxInstance:
+    klass: LoxClass
+    fields: dict[str, str] = field(default_factory=dict)
+
+    def get(self, name: Token):
+        if name.lexeme in self.fields:
+            return self.fields[name.lexeme]
+
+        raise RunTimeError(name, f"Undefined Property {name.lexeme}")
 
 
 class Interpreter(Visitor):
@@ -174,6 +203,12 @@ class Interpreter(Visitor):
         print(self.stringify(value))
         return None
 
+    def visit_class_stmt(self, class_stmt: "Class_Stmt"):
+        self._environment.define(class_stmt.name.lexeme, None)
+        klass = LoxClass(class_stmt.name.lexeme)
+        self._environment.assign(class_stmt.name, klass)
+        return None
+
     def visit_var_stmt(self, var_stmt: Var_Stmt):
         value = None
         if var_stmt.initializer is not None:
@@ -181,6 +216,11 @@ class Interpreter(Visitor):
 
         self._environment.define(var_stmt.name.lexeme, value)
         return None
+
+    def visit_get(self, get: "Get"):
+        object = self.evaluate(get.object)
+        if isinstance(object, LoxInstance):
+            return cast(LoxInstance, object).get(get.name)
 
     def visit_literal(self, literal: "Literal"):
         return literal.value

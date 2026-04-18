@@ -12,9 +12,11 @@ from .base_parser import (
     Binary,
     Block_Stmt,
     Call,
+    Class_Stmt,
     Expr_Stmt,
     Expression,
     Function_Stmt,
+    Get,
     Grouping,
     If_Stmt,
     Literal,
@@ -143,6 +145,15 @@ class Resolver(Visitor):
 
     def visit_print_stmt(self, print_stmt: "Print_Stmt"):
         self.resolve_expression(print_stmt.expression)
+        return None
+
+    def visit_class_stmt(self, class_stmt: "Class_Stmt"):
+        self.declare(class_stmt.name)
+        self.define(class_stmt.name)
+        return None
+
+    def visit_get(self, get: "Get"):
+        self.resolve_expression(get)
         return None
 
     def visit_return_stmt(self, return_stmt: "Return_Stmt"):
