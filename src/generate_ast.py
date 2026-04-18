@@ -104,6 +104,7 @@ def main():
 
     expression_mapping = {
         "Literal": "value: Any",
+        "Get": "object: Expression, name: Token",
         "Grouping": "expression: Expression",
         "Logical": "left: Expression, operator: Token, right: Expression",
         "Unary": "operator: Token, right: Expression",
@@ -115,6 +116,7 @@ def main():
 
     statement_mapping = {
         "Block_Stmt": "statements: list[Statement]",
+        "Class_Stmt": "name: Token, methods: list['Function_Stmt']",
         "Expr_Stmt": "expression: Expression",
         "If_Stmt": "condition: Expression, then_branch: Statement, else_branch: Statement",
         "Function_Stmt": "name: Token, params: list[Token], body: list['Statement']",

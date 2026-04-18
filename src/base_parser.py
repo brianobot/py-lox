@@ -11,6 +11,10 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
+    def visit_get(self, get: "Get") -> Any:
+        pass
+
+    @abstractmethod
     def visit_grouping(self, grouping: "Grouping") -> Any:
         pass
 
@@ -40,6 +44,10 @@ class Visitor(ABC):
 
     @abstractmethod
     def visit_block_stmt(self, block_stmt: "Block_Stmt") -> Any:
+        pass
+
+    @abstractmethod
+    def visit_class_stmt(self, class_stmt: "Class_Stmt") -> Any:
         pass
 
     @abstractmethod
@@ -83,6 +91,15 @@ class Literal(Expression):
 
     def accept(self, visitor: Visitor) -> Any:
         return visitor.visit_literal(self)
+
+
+@dataclass
+class Get(Expression):
+    object: Expression
+    name: Token
+
+    def accept(self, visitor: Visitor) -> Any:
+        return visitor.visit_get(self)
 
 
 @dataclass
@@ -161,6 +178,15 @@ class Block_Stmt(Statement):
 
     def accept(self, visitor: Visitor):
         return visitor.visit_block_stmt(self)
+
+
+@dataclass
+class Class_Stmt(Statement):
+    name: Token
+    methods: list["Function_Stmt"]
+
+    def accept(self, visitor: Visitor):
+        return visitor.visit_class_stmt(self)
 
 
 @dataclass

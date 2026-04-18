@@ -79,6 +79,7 @@ class Lox:
             yellow_print(statement)
 
         if self.has_error:
+            print("⚠️ Found an error!")
             return
 
         # 2b Run the Resolver
@@ -86,6 +87,7 @@ class Lox:
         resolver.resolve(statements)
 
         if self.has_error:
+            print("⚠️ Found an error!")
             return
 
         # 3. Executing the AST
