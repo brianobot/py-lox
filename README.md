@@ -197,7 +197,61 @@ AST and resolves all the variables it contains, in this stage, no side effects o
 
   **Rule**: A variable usage refers to the preceding declaration with the same
   name in the innermost scope that encloses the expression where the
-  variable is used.
+  variable is used. This implies that when a function or item in a scope uses a variable, the variable should resolve to the same variable nae in the innermost scope
+  that the declaration is DEFINED on, it;s very important to point out that the key point here is definition location
+
+  <div id="secret-tip"></div>
+
+  ## Sample Code
+
+  ```pylox
+  var a = "global";
+  {
+    fun showA() {
+      print a;
+    }
+
+    showA();
+    var a = "block";
+    showA();
+  }
+  ```
+
+  By our defintion, that call to `print a` in the function `showA` should always resolve to the `name` in the innermost scope at the point of the function definition
+  at that point, the variable `a` is always global except reassigned, and at that point the variable `var a = "block"` is declared.
+
+  Scopes and Environment are closely related but not the same, a new environment is created when we enter a new scope and that environment is discarded when the scope is exited.
+
+  Following the code snippet above, [at point](#secret-tip)
+  - at the point where the global variable a is defined, the environment is the _global environment
+  - when we enter the block, a new environment is created for that block which it's enclosing being the _global environment
+  - we declare a function in this environment which in turns captures the environment it was defined in (the block environment)
+  - when we step into the function body, a new environment is created for it, this environment is empty, since the function declares no variable, the enclosing environment is the block environment where the function was defined
+  - inside the function block, we execute a `print a`, the interpreter looks up this value by walking up the chain of enviroments starting from the innermost block (being the function block)
+    - it doesn't find `a` in the function block
+    - it doesn't find `a` in the enclosing block (the block environment)
+    - it finds `a` in the global environment which is the grand parent of the function's environment
+  - next we declare a second `a`, this time inside the block environment
+  - when we call the function again, this times it finds `a` in the block environment and this is the issue
+
+  ## Note:
+  A block is not neccesarily all the same scope
+
+  The main idea behind static resolution is to aid access operation to be consistent, it does this by finding every variable mentioned in the user program and figures out which declaration each variable refers to, This process is called `Semantic Analysis`.
+
+  This resolution steps include finding the number of links needed to find the variable used and then storing that count for future
+  reference to tha variable.
+
+  This static semantic analysis happens between the parsing stage and the interpretation stage, other steps like type checking can
+  be placed in this spot.
+
+  The semantic anaylsis is different from dynaminc execution in that, there's no side effect and there's no control flow.
+
+  Here are the Nodes in a AST that are important for the Resolution Process
+  - block: BLocks create a new scope for the statement it contains
+  - function: Function declaration introduces a new scope for it's body and binds it's parameter to that scope
+  - variable: Variable declaration adds a new variable to the scope
+  - variables & assignment: THese need to have their variables resolved
 
 - **Intermediate Representation**
 

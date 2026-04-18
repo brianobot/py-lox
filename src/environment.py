@@ -28,9 +28,6 @@ class Environment:
     def get_at(self, distance: int, name: str):
         return cast(Environment, self.ancestor(distance)).values.get(name)
 
-    def assign_at(self, distance: int, name: Token, value: Any):
-        cast(Environment, self.ancestor(distance)).values[name.lexeme] = value
-
     def ancestor(self, distance: int):
         environment = self
         i = 0
@@ -49,6 +46,9 @@ class Environment:
             return
 
         raise RuntimeError(name, f"Undefined variable {name.lexeme}.")
+
+    def assign_at(self, distance: int, name: Token, value: Any):
+        cast(Environment, self.ancestor(distance)).values[name.lexeme] = value
 
 
 if __name__ == "__main__":

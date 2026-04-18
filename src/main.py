@@ -3,6 +3,7 @@ from typing import Any
 
 from .interpreter import Interpreter, RunTimeError
 from .parser import Parser
+from .resolver import Resolver
 from .scanner import Scanner
 from .token import Token, TokenType
 
@@ -81,8 +82,11 @@ class Lox:
             return
 
         # 2b Run the Resolver
-        # resolver = Resolver(self.interpreter)
-        # resolver.resolve(statements)
+        resolver = Resolver(self.interpreter)
+        resolver.resolve(statements)
+
+        if self.has_error:
+            return
 
         # 3. Executing the AST
         self.interpreter.interpret(statements)
